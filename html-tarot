@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私人塔罗空间</title>
+    <style>
+        :root { --bg: #1a1a2e; --card: #16213e; --acc: #6c5ce7; --text: #e0e0e0; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 90%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #4e31aa; background: #0f3460; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--acc); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .log { text-align: left; background: #0f3460; padding: 10px; margin-top: 10px; border-radius: 5px; font-size: 14px; border-left: 4px solid var(--acc); }
+        #mainSpace { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="loginView">
+            <h1 style="color: #a29bfe;">🔮 塔罗空间</h1>
+            <p>同一个链接，输入昵称进入专属空间</p>
+            <input type="text" id="nameInput" placeholder="请输入你的昵称...">
+            <button onclick="login()">进入我的空间</button>
+        </div>
+
+        <div id="mainSpace">
+            <h2 id="userTitle" style="color: #a29bfe;"></h2>
+            <textarea id="noteInput" placeholder="写下今天的占卜感悟..."></textarea>
+            <button onclick="save()">存入星空记录</button>
+            <div id="logs" style="margin-top:20px; max-height: 300px; overflow-y: auto;"></div>
+            <p style="margin-top:20px;"><a href="javascript:void(0)" onclick="logout()" style="color:#888; text-decoration:none; font-size:12px;">← 切换用户</a></p>
+        </div>
+    </div>
+
+    <script>
+        const userKey = 'tarot_active_user';
+        
+        // 自动检查登录
+        window.onload = () => {
+            const user = localStorage.getItem(userKey);
+            if(user) showSpace(user);
+        };
+
+        function login() {
+            const name = document.getElementById('nameInput').value.trim();
+            if(!name) return alert("请输入名字");
+            localStorage.setItem(userKey, name);
+            showSpace(name);
+        }
+
+        function showSpace(name) {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('mainSpace').style.display = 'block';
+            document.getElementById('userTitle').innerText = "你好, " + name;
+            render();
+        }
+
+        function save() {
+            const user = localStorage.getItem(userKey);
+            const text = document.getElementById('noteInput').value.trim();
+            if(!text) return alert("请输入内容");
+            const key = 'tarot_data_' + user;
+            const data = JSON.parse(localStorage.getItem(key) || "[]");
+            data.unshift({ time: new Date().toLocaleString(), text: text });
+            localStorage.setItem(key, JSON.stringify(data));
+            document.getElementById('noteInput').value = '';
+            render();
+        }
+
+        function render() {
+            const user = localStorage.getItem(userKey);
+            const data = JSON.parse(localStorage.getItem('tarot_data_' + user) || "[]");
+            document.getElementById('logs').innerHTML = data.map(item => `
+                <div class="log"><b>${item.time}</b><br>${item.text}</div>
+            `).join('') || '<p style="color:#666">暂无记录</p>';
+        }
+
+        function logout() {
+            localStorage.removeItem(userKey);
+            location.reload();
+        }
+    </script>
+</body>
+</html>
