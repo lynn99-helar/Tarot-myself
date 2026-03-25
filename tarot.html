@@ -1,860 +1,277 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>占卜助手 - 塔罗与金钱卦</title>
-    <style>
-        /* --- 基础样式 --- */
-        body {
-            font-family: 'STKaiti', '楷体', serif;
-            background-color: #f4f1ea; /* 淡雅的纸张色 */
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>九天玄法 - 塔罗与金钱卦</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* 核心基础样式 */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F4F1EB;--paper:#FDFAF4;--ink:#1A1814;--mid:#5A5650;--dim:#9A9490;
+  --line:rgba(90,86,80,.16);--acc:#8B6F47;--accl:rgba(139,111,71,.10);--cb:#1E1A16;
+  --gold:#C8A96E;--rose:#C4786A;--blue:#5B7FA6;--grn:#5A7A5A;
+}
+html,body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min-height:100vh;transition:all .3s;overflow-x:hidden}
 
-        h1 {
-            color: #8b4513; /* 马鞍棕 */
-            text-align: center;
-        }
+#app{max-width:480px;margin:0 auto;padding:20px 16px 100px;position:relative;z-index:1}
+.screen{animation:fadeIn .4s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-        button {
-            background-color: #a0522d; /* 赭色 */
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 5px;
-            transition: background-color 0.3s;
-        }
+/* 顶部导航切换 */
+.nav-tab{display:flex;gap:10px;margin-bottom:20px;justify-content:center}
+.tab-btn{padding:8px 16px;border-radius:20px;border:1px solid var(--line);background:var(--paper);font-size:.8rem;cursor:pointer}
+.tab-btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
-        button:hover {
-            background-color: #8b4513;
-        }
+/* 扇形牌阵专用样式 */
+#fan-wrap{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;animation:fadeIn .3s}
+#fan-table{flex:1;position:relative;margin-top:60px;perspective:1000px}
+.fan-card{position:absolute;width:70px;height:110px;left:calc(50% - 35px);top:20%;background:var(--cb);border-radius:5px;box-shadow:0 4px 10px rgba(0,0,0,0.3);cursor:pointer;transform-origin:center 250%;transition:all .3s cubic-bezier(0.23, 1, 0.32, 1)}
+.fan-card:hover{transform:translateY(-15px) rotate(var(--r)) scale(1.1)!important;z-index:100!important}
+.fan-card.selected{opacity:0;transform:scale(0) translateY(-100px)!important;pointer-events:none}
 
-        /* --- 模式选择 --- */
-        #mode-selection {
-            margin-bottom: 20px;
-            text-align: center;
-        }
+/* 牌阵展示区 */
+.card-grid{display:flex;justify-content:center;gap:15px;flex-wrap:wrap;margin:30px 0}
+.card-box{display:flex;flex-direction:column;align-items:center;width:85px}
+.tarot-img{width:80px;height:130px;background:var(--cb);border-radius:4px;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .6s}
+.tarot-img img{width:100%;height:100%;object-fit:cover}
+.tarot-img.back::after{content:'?';color:var(--gold);font-size:1.5rem}
+.tarot-img.rev{transform:rotate(180deg)}
+.card-label{margin-top:8px;font-size:.75rem;font-weight:600;color:var(--mid);text-align:center}
 
-        /* --- 塔罗占卜区域 --- */
-        #tarot-section, #yijing-section {
-            display: none; /* 默认隐藏 */
-            width: 100%;
-            max-width: 1000px;
-            flex-direction: column;
-            align-items: center;
-        }
+/* 金钱卦样式 */
+.gua-box{background:var(--paper);padding:20px;border-radius:12px;border:1px solid var(--line);margin-top:15px}
+.coin-row{display:flex;justify-content:center;gap:15px;margin:20px 0}
+.coin{width:50px;height:50px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--cb);box-shadow:0 3px 0 #A68A56;border:2px solid #D4B07A}
+.coin.back{background:#C0C0C0;box-shadow:0 3px 0 #808080;border-color:#A9A9A9}
+.yao-list{display:flex;flex-direction:column-reverse;gap:8px;margin-top:20px;align-items:center}
+.yao-line{width:120px;height:12px;background:var(--ink);position:relative}
+.yao-line.yin::after{content:'';position:absolute;left:40%;width:20%;height:100%;background:var(--paper)}
+.yao-mark{position:absolute;right:-25px;font-size:.7rem;color:var(--rose)}
 
-        #yijing-section.active, #tarot-section.active {
-            display: flex;
-        }
+/* 按钮 */
+.btn{padding:12px 24px;border-radius:8px;border:none;background:var(--ink);color:var(--bg);cursor:pointer;width:100%;font-size:.9rem}
+.btn-ghost{background:transparent;border:1px solid var(--acc);color:var(--acc);margin-top:10px}
 
-        /* --- 塔罗设置 --- */
-        #tarot-settings {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .settings-row {
-            margin: 10px 0;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        select {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-
-        /* --- 塔罗扇形选牌区 (New) --- */
-        #tarot-fan-area {
-            position: relative;
-            width: 100%;
-            height: 350px; /* 扇形的高度 */
-            display: flex;
-            justify-content: center;
-            overflow: hidden; /* 隐藏超出部分 */
-            margin-bottom: 30px;
-            display: none; /* 初始隐藏 */
-        }
-
-        #tarot-fan-area.active {
-            display: flex;
-        }
-
-        .fan-card {
-            position: absolute;
-            width: 80px; /* 选牌时较小的卡片 */
-            height: 140px;
-            background-color: #2c3e50; /* 卡背颜色 */
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transform-origin: bottom center; /* 旋转中心在底部 */
-            transition: transform 0.5s ease-out, box-shadow 0.3s;
-            z-index: 1;
-        }
-
-        .fan-card:hover {
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-            transform: scale(1.05) !important; /* 悬停时稍微放大，!important 为了覆盖 JS 计算的 transform */
-            z-index: 100;
-        }
-
-        .fan-card.selected {
-            opacity: 0;
-            transform: translateY(-200px) scale(0) !important; /* 选中后飞走消失 */
-            pointer-events: none;
-        }
-
-
-        /* --- 塔罗牌阵区域 --- */
-        #tarot-spread-area {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        /* --- 塔罗卡片样式 --- */
-        .card-container {
-            width: 140px; /* 展示时较大的卡片 */
-            height: 245px;
-            perspective: 1000px; /* 3D 透视 */
-            position: relative;
-            margin-bottom: 30px; /* 为下方牌名留出空间 */
-        }
-
-        .card {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            transform-style: preserve-3d;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 翻转动画 */
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            cursor: pointer;
-        }
-
-        /* 修复：初始状态未翻开 */
-        .card.flipped {
-            transform: rotateY(180deg);
-        }
-
-        .card-face {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            backface-visibility: hidden; /* 隐藏背面 */
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden; /* 确保图片不溢出 */
-        }
-
-        /* 牌面样式：只显示原始图像 (Modified) */
-        .card-front {
-            transform: rotateY(180deg);
-            background-color: white;
-        }
-
-        .card-front img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: cover; /* 保持比例填充 */
-        }
-
-        /* 牌背样式 */
-        .card-back {
-            background-color: #2c3e50; /* 暗蓝色 */
-            border: 2px solid #a0522d;
-            color: #f1c40f;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3em;
-        }
-
-        /* 牌名样式 (New) */
-        .card-name {
-            position: absolute;
-            bottom: -25px; /* 在卡片正下方 */
-            width: 100%;
-            text-align: center;
-            font-size: 14px;
-            font-weight: bold;
-            color: #555;
-            display: none; /* 初始隐藏 */
-        }
-
-        .card.flipped + .card-name {
-            display: block; /* 翻开后显示牌名 */
-        }
-
-
-        /* --- 金钱卦占卜区域 (New) --- */
-        #yijing-section {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        #yijing-operation {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        #yijing-coins {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-            font-size: 2em;
-        }
-
-        .coin {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #f1c40f; /* 金色 */
-            border: 2px solid #b7950b;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #333;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .coin.front {
-            background-color: #f1c40f;
-            color: #333;
-        }
-
-        .coin.back {
-            background-color: #ddd;
-            color: #777;
-        }
-
-        #yijing-hexagrams {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 20px;
-        }
-
-        .hexagram-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .hexagram-name {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #8b4513;
-            margin-bottom: 10px;
-        }
-
-        .hexagram-lines {
-            display: flex;
-            flex-direction: column-reverse; /* 六爻从下往上 */
-            gap: 5px;
-        }
-
-        .line {
-            width: 100px;
-            height: 10px;
-            border-radius: 2px;
-        }
-
-        .line.yang {
-            background-color: #333; /* 阳爻 —— */
-        }
-
-        .line.yin {
-            background-color: #333; /* 阴爻 -- */
-            position: relative;
-        }
-
-        .line.yin::after {
-            content: '';
-            position: absolute;
-            left: 33%;
-            top: 0;
-            width: 34%;
-            height: 100%;
-            background-color: white; /* 阴爻中间断开 */
-        }
-
-        /* 动爻标记 */
-        .line.moving::before {
-            content: 'x';
-            position: absolute;
-            left: -15px;
-            top: -10px;
-            color: #e74c3c;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-
-        #yijing-result {
-            margin-top: 30px;
-            padding: 15px;
-            background-color: #fcf8e3;
-            border: 1px solid #faebcc;
-            border-radius: 4px;
-            color: #8a6d3b;
-            display: none;
-            width: 100%;
-        }
-
-        #yijing-result.active {
-            display: block;
-        }
-
-        /* --- 动画 --- */
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-
-        .shaking {
-            animation: shake 0.5s;
-            animation-iteration-count: infinite;
-        }
-
-    </style>
+/* 答案之书全屏覆盖 */
+#book-ui{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:2000;display:flex;align-items:center;justify-content:center;padding:30px}
+.book-paper{background:var(--paper);width:100%;max-width:300px;padding:40px 20px;text-align:center;border-radius:4px 15px 15px 4px;box-shadow: -10px 0 20px rgba(0,0,0,0.5)}
+</style>
 </head>
 <body>
 
-    <h1>占卜助手 - 塔罗与金钱卦</h1>
+<div id="app"></div>
 
-    <div id="mode-selection">
-        <button id="btn-tarot">塔罗占卜</button>
-        <button id="btn-yijing">金钱卦</button>
+<script>
+// --- 核心配置 ---
+const TAROT_NAMES = ["愚者","魔术师","女祭司","女皇","皇帝","教皇","恋人","战车","力量","隐士","命运之轮","正义","倒吊人","死神","节制","恶魔","高塔","星星","月亮","太阳","审判","世界"];
+const BOOK_ANSWERS = ["是的，顺从直觉","时机尚未成熟","需要换位思考","放弃并不代表失败","答案就在你身边","大胆尝试，必有回响","保持沉默是上策","去寻求一位长辈的建议","这将是一个惊喜","不要在这个问题上纠结"];
+
+// --- 状态管理 ---
+let S = {
+  tab: 'tarot', // tarot | gua
+  page: 'home', // home | result
+  picking: false,
+  pickCount: 3,
+  drawn: [],
+  q: '',
+  // 答案之书
+  bookOpen: false,
+  bookResult: '',
+  // 金钱卦
+  guaYao: [], // 存储六次摇卦结果
+  rolling: false,
+  deepAI: ''
+};
+
+function render() {
+  const root = document.getElementById('app');
+  
+  if(S.bookOpen) {
+    root.innerHTML = renderBook();
+    return;
+  }
+
+  if(S.picking) {
+    root.innerHTML = renderFan();
+    return;
+  }
+
+  let html = `
+    <div class="nav-tab">
+      <div class="tab-btn ${S.tab==='tarot'?'active':''}" onclick="setTab('tarot')">塔罗占卜</div>
+      <div class="tab-btn ${S.tab==='gua'?'active':''}" onclick="setTab('gua')">金钱卦</div>
     </div>
+  `;
 
-    <div id="tarot-section">
-        <div id="tarot-settings">
-            <h3>塔罗占卜设置</h3>
-            <div class="settings-row">
-                <label for="deck-type">牌组：</label>
-                <select id="deck-type">
-                    <option value="all">完整 78 张牌</option>
-                    <option value="major">仅大阿尔卡纳 (22张)</option>
-                </select>
+  if(S.tab === 'tarot') html += S.page === 'home' ? renderTarotHome() : renderTarotResult();
+  else html += renderGua();
 
-                <label for="spread-type">牌阵：</label>
-                <select id="spread-type">
-                    <option value="1">单牌占卜</option>
-                    <option value="3">圣三角 (过去/现在/未来)</option>
-                    <option value="custom">自定义抽牌数</option>
-                </select>
-                <input type="number" id="custom-card-count" min="1" max="10" value="3" style="width: 50px; display:none;">
-            </div>
+  root.innerHTML = html;
+}
 
-            <div class="settings-row">
-                <label>牌面状态：</label>
-                <input type="radio" name="flip-mode" value="back" id="flip-back" checked> <label for="flip-back">背面向上 (手动翻开)</label>
-                <input type="radio" name="flip-mode" value="front" id="flip-front"> <label for="flip-front">直接翻开</label>
-            </div>
-
-            <button id="btn-prepare-draw">准备抽牌</button>
-        </div>
-
-        <div id="tarot-fan-area">
-            </div>
-
-        <div id="tarot-spread-area">
-            </div>
+// --- 塔罗逻辑 ---
+function renderTarotHome() {
+  return `
+    <div class="screen">
+      <h2 style="margin-bottom:20px;font-weight:400">探寻命运之光</h2>
+      <textarea id="q-inp" placeholder="输入你的困惑..." style="width:100%;height:100px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);margin-bottom:20px">${S.q}</textarea>
+      <div style="margin-bottom:20px">
+        <label style="font-size:.8rem;color:var(--mid)">选择抽牌张数：</label>
+        <select id="count-sel" onchange="S.pickCount=parseInt(this.value)" style="padding:5px;border-radius:4px">
+          <option value="1">单牌指引</option>
+          <option value="3" selected>三牌时空（过去/现在/未来）</option>
+        </select>
+      </div>
+      <button class="btn" onclick="startPick()">推开牌阵</button>
+      <button class="btn btn-ghost" onclick="openBook()">翻开答案之书</button>
     </div>
+  `;
+}
 
-    <div id="yijing-section">
-        <h3>金钱卦卜卦 (模拟灵光象吉)</h3>
-
-        <div id="yijing-operation">
-            <p>请点击按钮起卦，共需摇动六次。</p>
-            <button id="btn-shake-yijing">摇动硬币 (第 1 次)</button>
-            <button id="btn-reset-yijing" style="display:none;">重新起卦</button>
-        </div>
-
-        <div id="yijing-coins" style="display:none;">
-            <div class="coin" id="coin-1">正</div>
-            <div class="coin" id="coin-2">正</div>
-            <div class="coin" id="coin-3">正</div>
-        </div>
-
-        <p id="yijing-status" style="text-align:center; color: #777;"></p>
-
-        <div id="yijing-hexagrams" style="display:none;">
-            <div class="hexagram-container" id="main-hexagram">
-                <div class="hexagram-name">本卦：--</div>
-                <div class="hexagram-lines">
-                    <div class="line" id="line-6"></div>
-                    <div class="line" id="line-5"></div>
-                    <div class="line" id="line-4"></div>
-                    <div class="line" id="line-3"></div>
-                    <div class="line" id="line-2"></div>
-                    <div class="line" id="line-1"></div>
-                </div>
-            </div>
-            <div class="hexagram-container" id="changed-hexagram" style="display:none;">
-                <div class="hexagram-name">变卦：--</div>
-                <div class="hexagram-lines">
-                    <div class="line" id="changed-line-6"></div>
-                    <div class="line" id="changed-line-5"></div>
-                    <div class="line" id="changed-line-4"></div>
-                    <div class="line" id="changed-line-3"></div>
-                    <div class="line" id="changed-line-2"></div>
-                    <div class="line" id="changed-line-1"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="yijing-result">
-            </div>
+function renderFan() {
+  let cards = '';
+  for(let i=0; i<22; i++) {
+    const r = -60 + (i * 120 / 21);
+    cards += `<div class="fan-card" style="--r:${r}deg; transform: rotate(${r}deg)" onclick="pickOne(${i})"></div>`;
+  }
+  return `
+    <div id="fan-wrap">
+      <div style="padding:20px;text-align:center">
+        <p>请心中默念问题，选出 ${S.pickCount} 张牌</p>
+        <p style="font-size:.8rem;color:var(--mid)">已选：${S.drawn.length} / ${S.pickCount}</p>
+      </div>
+      <div id="fan-table">${cards}</div>
+      <div style="padding:20px"><button class="btn btn-ghost" onclick="S.picking=false;render()">取消返回</button></div>
     </div>
+  `;
+}
 
-    <script>
-        // ==========================================
-        // --- 全局配置与数据 ---
-        // ==========================================
+function pickOne(idx) {
+  if(S.drawn.length >= S.pickCount) return;
+  const event = window.event;
+  event.target.classList.add('selected');
+  
+  const cardId = Math.floor(Math.random()*22);
+  S.drawn.push({
+    id: cardId,
+    name: TAROT_NAMES[cardId],
+    rev: Math.random() > 0.7,
+    flipped: false
+  });
 
-        // 1. 塔罗牌数据 (78张完整)
-        // 请将此处修改为你实际的图片文件夹路径
-        const tarotImagesPath = './path/to/your/tarot/images/'; // 示例路径，你需要修改！
-        const tarotCards = [
-            { id: 0, name: "愚者 (The Fool)", rank: "Major", file: "0.jpg" },
-            { id: 1, name: "魔术师 (The Magician)", rank: "Major", file: "1.jpg" },
-            { id: 2, name: "女祭司 (The High Priestess)", rank: "Major", file: "2.jpg" },
-            { id: 3, name: "皇后 (The Empress)", rank: "Major", file: "3.jpg" },
-            { id: 4, name: "皇帝 (The Emperor)", rank: "Major", file: "4.jpg" },
-            { id: 5, name: "教皇 (The Hierophant)", rank: "Major", file: "5.jpg" },
-            { id: 6, name: "恋人 (The Lovers)", rank: "Major", file: "6.jpg" },
-            { id: 7, name: "战车 (The Chariot)", rank: "Major", file: "7.jpg" },
-            { id: 8, name: "力量 (Strength)", rank: "Major", file: "8.jpg" },
-            { id: 9, name: "隐士 (The Hermit)", rank: "Major", file: "9.jpg" },
-            { id: 10, name: "命运之轮 (Wheel of Fortune)", rank: "Major", file: "10.jpg" },
-            { id: 11, name: "正义 (Justice)", rank: "Major", file: "11.jpg" },
-            { id: 12, name: "倒吊人 (The Hanged Man)", rank: "Major", file: "12.jpg" },
-            { id: 13, name: "死神 (Death)", rank: "Major", file: "13.jpg" },
-            { id: 14, name: "节制 (Temperance)", rank: "Major", file: "14.jpg" },
-            { id: 15, name: "恶魔 (The Devil)", rank: "Major", file: "15.jpg" },
-            { id: 16, name: "高塔 (The Tower)", rank: "Major", file: "16.jpg" },
-            { id: 17, name: "星星 (The Star)", rank: "Major", file: "17.jpg" },
-            { id: 18, name: "月亮 (The Moon)", rank: "Major", file: "18.jpg" },
-            { id: 19, name: "太阳 (The Sun)", rank: "Major", file: "19.jpg" },
-            { id: 20, name: "审判 (Judgement)", rank: "Major", file: "20.jpg" },
-            { id: 21, name: "世界 (The World)", rank: "Major", file: "21.jpg" },
-            // ... (此处省略小阿尔卡纳，为了代码演示简洁，但逻辑支持78张)
-            // 你可以完整添加所有78张
-            // 例如：{ id: 22, name: "权杖一 (Ace of Wands)", rank: "Wands", file: "22.jpg" }, ...
-        ];
-        // 如果没有完整数据，我们用前22张进行演示
-        if (tarotCards.length < 78) {
-            console.warn("塔罗牌数据不完整，仅用大阿尔卡纳进行演示。");
-        }
+  if(S.drawn.length === S.pickCount) {
+    setTimeout(() => { S.picking = false; S.page = 'result'; render(); }, 600);
+  }
+}
 
-        // 2. 金钱卦 (易经) 64 卦数据 (简化版，仅作模式演示)
-        // 卦象使用二进制字符串：'111111' 表示六爻全阳（乾），'0' 为阴，'1' 为阳，从初爻(最下)到上爻(最上)
-        const yijingHexagramData = {
-            '111111': { name: '乾为天', judgment: '元、亨、利、贞。', meaning: '大通顺，利于坚守正道。象征着极大的潜力和成功。', fortune: '如日中天，名利双收，但需戒骄戒躁，保持谦虚。' },
-            '000000': { name: '坤为地', judgment: '元、亨，利牝马之贞。', meaning: '柔顺、包容、滋养。象征着合作、顺从和稳定。', fortune: '宜守不宜进，宜静不宜动，利于合作，需有耐心。' },
-            '100000': { name: '地雷复', judgment: '亨。出入无疾，朋来无咎。', meaning: '复归、恢复。象征着循环、新生和恢复活力。', fortune: '好运正在回归，事情有了眉目，宜循序渐进。' },
-            '111000': { name: '天地否', judgment: '否之匪人，不利君子贞。', meaning: '闭塞、隔阂。象征着沟通不畅、运气低迷。', fortune: '目前处境不佳，容易遇到小人，宜退守、保持低调。' },
-            '000111': { name: '地天泰', judgment: '泰，小往大来，吉，亨。', meaning: '通泰、和谐。象征着上下和睦、吉祥如意。', fortune: '鸿运当头，百事顺遂，人际关系融洽。' },
-            // ... 此处需要完整补充64卦数据。为了代码演示，只列出这几个。
-            // 模式演示，如果摇出其他卦，将显示默认信息。
-        };
+function renderTarotResult() {
+  return `
+    <div class="screen">
+      <button class="btn btn-ghost" style="width:auto;padding:5px 15px" onclick="S.page='home';S.drawn=[];S.deepAI='';render()">重新占卜</button>
+      <div class="card-grid">
+        ${S.drawn.map((c, i) => `
+          <div class="card-box">
+            <div class="tarot-img ${!c.flipped?'back':''} ${c.rev?'rev':''}" onclick="flipCard(${i})">
+              ${c.flipped ? `<img src="https://api.placeholder.com/80/130?text=${c.id}">` : ''}
+            </div>
+            <div class="card-label">${c.flipped ? c.name + (c.rev?'·逆':'·正') : '？'}</div>
+          </div>
+        `).join('')}
+      </div>
+      ${S.deepAI ? `<div class="gua-box" style="font-size:.85rem;line-height:1.8">${S.deepAI}</div>` : 
+      `<button class="btn" onclick="askAI()">AI 深度解读</button>`}
+    </div>
+  `;
+}
 
-        const yijingLineTypes = {
-            '3O': { symbol: '—', name: '老阳', isMoving: true, value: 3 }, // 3个正面
-            '3X': { symbol: '- -', name: '老阴', isMoving: true, value: 0 }, // 3个反面
-            '2O1X': { symbol: '- -', name: '少阴', isMoving: false, value: 1 }, // 2正1反
-            '1O2X': { symbol: '—', name: '少阳', isMoving: false, value: 2 } // 1正2反
-        };
+function flipCard(i) {
+  S.drawn[i].flipped = true;
+  render();
+}
 
+// --- 金钱卦逻辑 (灵光象吉模式) ---
+function renderGua() {
+  return `
+    <div class="screen">
+      <h2 style="font-weight:400">金钱卦卜筮</h2>
+      <div class="gua-box">
+        <p style="font-size:.8rem;color:var(--mid);text-align:center">模拟三次掷币，共起六爻</p>
+        <div class="coin-row">
+          <div class="coin">正</div><div class="coin">正</div><div class="coin back">反</div>
+        </div>
+        <button class="btn" onclick="rollGua()" ${S.guaYao.length>=6?'disabled':''}>
+          ${S.guaYao.length>=6?'起卦完成':`第 ${S.guaYao.length+1} 次掷币`}
+        </button>
+        <div class="yao-list">
+          ${S.guaYao.map(y => `
+            <div class="yao-line ${y.type==='yin'?'yin':''}">
+              <span class="yao-mark">${y.mark}</span>
+            </div>
+          `).join('')}
+        </div>
+        ${S.guaYao.length>=6 ? `<button class="btn btn-ghost" onclick="S.guaYao=[];render()">重新起卦</button>` : ''}
+      </div>
+    </div>
+  `;
+}
 
-        // ==========================================
-        // --- 核心逻辑与 UI 交互 ---
-        // ==========================================
+function rollGua() {
+  const coins = [Math.random()>0.5, Math.random()>0.5, Math.random()>0.5];
+  const heads = coins.filter(c => c).length;
+  let yao = { type: 'yang', mark: '' };
+  
+  if(heads === 0) { yao = {type:'yin', mark:'○ 老阴'}; }
+  else if(heads === 1) { yao = {type:'yang', mark:''}; }
+  else if(heads === 2) { yao = {type:'yin', mark:''}; }
+  else if(heads === 3) { yao = {type:'yang', mark:'× 老阳'}; }
 
-        document.addEventListener('DOMContentLoaded', () => {
+  S.guaYao.push(yao);
+  render();
+}
 
-            // 1. 模式切换
-            const btnTarot = document.getElementById('btn-tarot');
-            const btnYijing = document.getElementById('btn-yijing');
-            const tarotSection = document.getElementById('tarot-section');
-            const yijingSection = document.getElementById('yijing-section');
+// --- 答案之书 ---
+function renderBook() {
+  return `
+    <div id="book-ui" onclick="S.bookOpen=false;render()">
+      <div class="book-paper" onclick="event.stopPropagation()">
+        <h3 style="font-family:serif;letter-spacing:2px;margin-bottom:30px">答案之书</h3>
+        <div style="min-height:80px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-style:italic">
+          ${S.bookResult || '默念问题，点击翻开'}
+        </div>
+        <button class="btn" style="margin-top:30px" onclick="flipBook()">翻开此页</button>
+        <p style="margin-top:15px;font-size:.7rem;color:var(--dim)">点击空白处关闭</p>
+      </div>
+    </div>
+  `;
+}
+function openBook() { S.bookOpen=true; S.bookResult=''; render(); }
+function flipBook() { S.bookResult = BOOK_ANSWERS[Math.floor(Math.random()*BOOK_ANSWERS.length)]; render(); }
 
-            btnTarot.addEventListener('click', () => {
-                tarotSection.classList.add('active');
-                yijingSection.classList.remove('active');
-            });
+// --- AI 接口 ---
+async function askAI() {
+  S.deepAI = "智者正在思考星象..."; render();
+  try {
+    const res = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer sk-pzhfkhvobfxtqiyofclunqivizovstxxtxscqigvujfztwfy', 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: "deepseek-ai/DeepSeek-V3",
+        messages: [{role: "user", content: `塔罗解读。问题：${S.q}，牌阵：${S.drawn.map(c=>c.name+(c.rev?'逆':'正')).join(',')}`}]
+      })
+    });
+    const data = await res.json();
+    S.deepAI = data.choices[0].message.content;
+  } catch(e) { S.deepAI = "星象连接中断，请稍后再试。"; }
+  render();
+}
 
-            btnYijing.addEventListener('click', () => {
-                yijingSection.classList.add('active');
-                tarotSection.classList.remove('active');
-                resetYijingDivination(); // 切换模式时重置
-            });
+function setTab(t) { S.tab=t; render(); }
+function startPick() { S.q = document.getElementById('q-inp').value; S.picking=true; S.drawn=[]; render(); }
 
-
-            // ==========================================
-            // --- 塔罗占卜逻辑 ---
-            // ==========================================
-
-            const btnPrepareDraw = document.getElementById('btn-prepare-draw');
-            const tarotFanArea = document.getElementById('tarot-fan-area');
-            const tarotSpreadArea = document.getElementById('tarot-spread-area');
-            const spreadTypeSelect = document.getElementById('spread-type');
-            const customCardCountInput = document.getElementById('custom-card-count');
-            const deckTypeSelect = document.getElementById('deck-type');
-
-            let selectedCards = []; // 用户抽取的牌
-            let currentDeck = []; // 当前使用的牌组
-
-            // 自定义抽牌数输入框显示
-            spreadTypeSelect.addEventListener('change', () => {
-                customCardCountInput.style.display = spreadTypeSelect.value === 'custom' ? 'inline-block' : 'none';
-            });
-
-            // 准备抽牌：洗牌并展示扇形区
-            btnPrepareDraw.addEventListener('click', () => {
-                // 1. 确定牌组
-                currentDeck = deckTypeSelect.value === 'major' ?
-                    tarotCards.filter(c => c.rank === 'Major') : [...tarotCards];
-
-                if (currentDeck.length === 0) {
-                    alert("牌组数据为空，请检查配置。");
-                    return;
-                }
-
-                // 2. 确定抽牌数
-                let cardCountToDraw = parseInt(spreadTypeSelect.value);
-                if (spreadTypeSelect.value === 'custom') {
-                    cardCountToDraw = parseInt(customCardCountInput.value);
-                }
-
-                // 3. 洗牌 (Fisher-Yates 算法)
-                currentDeck = shuffleDeck(currentDeck);
-
-                // 4. 重置占卜状态
-                selectedCards = [];
-                tarotSpreadArea.innerHTML = ''; // 清空之前的牌阵
-                tarotFanArea.innerHTML = ''; // 清空之前的扇形
-                btnPrepareDraw.disabled = true; // 抽牌中禁用准备按钮
-
-                // 5. 显示扇形区并生成背面卡片 (扇形展开动画)
-                showFanSpread(currentDeck, cardCountToDraw);
-            });
-
-            // 洗牌函数
-            function shuffleDeck(deck) {
-                for (let i = deck.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [deck[i], deck[j]] = [deck[j], deck[i]];
-                }
-                return deck;
-            }
-
-            // 显示扇形选牌 (Modified to create fan effect)
-            function showFanSpread(deck, countToDraw) {
-                tarotFanArea.classList.add('active');
-                const totalCards = deck.length;
-                const fanWidth = 120; // 扇形展开的角度范围 (度)
-                const minAngle = -fanWidth / 2;
-
-                for (let i = 0; i < totalCards; i++) {
-                    const fanCardHtml = document.createElement('div');
-                    fanCardHtml.className = 'fan-card';
-                    fanCardHtml.dataset.index = i; // 记录牌在洗好牌组中的索引
-
-                    // 计算每张牌的旋转角度
-                    const angle = minAngle + (i / totalCards) * fanWidth;
-                    // 计算微调的 translate (可选，增加生动感)
-                    const translateY = Math.abs(angle) * 0.5; // 中间高两边低
-                    const translateX = angle * 1.2; // 稍微拉开
-
-                    // 设置 CSS 变量，用于 transform ( transform-origin 已在 CSS 中设置)
-                    fanCardHtml.style.transform = `rotate(${angle}deg) translate(${translateX}px, ${translateY}px)`;
-                    fanCardHtml.style.zIndex = i; // 确保叠加顺序
-
-                    // 添加点击抽牌事件
-                    fanCardHtml.addEventListener('click', () => {
-                        if (selectedCards.length < countToDraw) {
-                            handleCardSelect(fanCardHtml, deck[i]);
-                        }
-                        if (selectedCards.length === countToDraw) {
-                            // 抽齐了，隐藏扇形区，恢复准备按钮
-                            setTimeout(() => {
-                                tarotFanArea.classList.remove('active');
-                                btnPrepareDraw.disabled = false;
-                            }, 800);
-                        }
-                    });
-
-                    tarotFanArea.appendChild(fanCardHtml);
-                }
-            }
-
-            // 处理卡片选择和放入牌阵
-            function handleCardSelect(fanCardElement, cardData) {
-                fanCardElement.classList.add('selected'); // 触发飞走消失动画
-                selectedCards.push(cardData);
-
-                // 将抽取的牌添加到占卜牌阵区域
-                addCardToSpreadArea(cardData);
-            }
-
-            // 将卡片生成 HTML 并添加到牌阵展示区
-            function addCardToSpreadArea(cardData) {
-                const isDirectFlip = document.querySelector('input[name="flip-mode"]:checked').value === 'front';
-
-                const cardHtml = generateCardHtml(cardData, isDirectFlip);
-                tarotSpreadArea.appendChild(cardHtml);
-            }
-
-            // 修复 Bug：简化生成 HTML，确保 flipped 状态受控
-            function generateCardHtml(cardData, isFlippedInitially) {
-                const container = document.createElement('div');
-                container.className = 'card-container';
-
-                const cardHtml = `
-                    <div class="card ${isFlippedInitially ? 'flipped' : ''}" id="card-${cardData.id}">
-                        <div class="card-face card-back">?</div>
-                        <div class="card-face card-front">
-                            <img src="${tarotImagesPath}${cardData.file}" alt="${cardData.name}" onerror="this.src='https://via.placeholder.com/140x245?text=Missing+Image';">
-                        </div>
-                    </div>
-                    <div class="card-name">${cardData.name}</div>
-                `;
-
-                container.innerHTML = cardHtml;
-
-                // 修复 Bug：如果是背面向上，添加手动翻牌事件
-                if (!isFlippedInitially) {
-                    const cardElement = container.querySelector('.card');
-                    cardElement.addEventListener('click', () => {
-                        cardElement.classList.add('flipped');
-                    }, { once: true }); // 只允许翻开一次
-                }
-
-                return container;
-            }
-
-
-            // ==========================================
-            // --- 金钱卦占卜逻辑 (New) ---
-            // ==========================================
-
-            const btnShakeYijing = document.getElementById('btn-shake-yijing');
-            const btnResetYijing = document.getElementById('btn-reset-yijing');
-            const yijingCoins = document.getElementById('yijing-coins');
-            const coinElements = [
-                document.getElementById('coin-1'),
-                document.getElementById('coin-2'),
-                document.getElementById('coin-3')
-            ];
-            const yijingStatus = document.getElementById('yijing-status');
-            const yijingHexagrams = document.getElementById('yijing-hexagrams');
-            const yijingResultArea = document.getElementById('yijing-result');
-            const mainHexContainer = document.getElementById('main-hexagram');
-            const changedHexContainer = document.getElementById('changed-hexagram');
-
-            let currentHexagramLines = []; // 存储六爻结果（从下到上）
-            let rollsCompleted = 0; // 已摇动次数
-
-            // 摇动金钱卦 (模拟灵光象吉)
-            btnShakeYijing.addEventListener('click', () => {
-                if (rollsCompleted >= 6) return;
-
-                // 1. 摇动动画
-                yijingCoins.style.display = 'flex';
-                yijingCoins.classList.add('shaking');
-                btnShakeYijing.disabled = true;
-                yijingStatus.textContent = "正在摇动...";
-
-                // 2. 模拟摇出三个硬币结果 (O 为正，X 为反)
-                setTimeout(() => {
-                    const rollResults = [];
-                    let headsCount = 0;
-                    for (let i = 0; i < 3; i++) {
-                        const isHeads = Math.random() < 0.5; // 50% 概率正反
-                        rollResults.push(isHeads ? 'O' : 'X');
-                        if (isHeads) headsCount++;
-                    }
-
-                    // 3. 停止动画并显示硬币
-                    yijingCoins.classList.remove('shaking');
-                    coinElements.forEach((coin, index) => {
-                        coin.textContent = rollResults[index] === 'O' ? '正' : '反';
-                        coin.className = `coin ${rollResults[index] === 'O' ? 'front' : 'back'}`;
-                    });
-
-                    // 4. 计算爻象
-                    let lineKey = '';
-                    if (headsCount === 3) lineKey = '3O'; // 老阳
-                    else if (headsCount === 0) lineKey = '3X'; // 老阴
-                    else if (headsCount === 2) lineKey = '2O1X'; // 少阴
-                    else lineKey = '1O2X'; // 少阳
-
-                    const lineInfo = yijingLineTypes[lineKey];
-                    currentHexagramLines.push(lineInfo); // 记录当前爻
-                    rollsCompleted++;
-
-                    // 5. 更新状态和卦象显示
-                    updateYijingDisplay(lineInfo);
-
-                    // 6. 判断是否完成
-                    if (rollsCompleted < 6) {
-                        btnShakeYijing.textContent = `摇动硬币 (第 ${rollsCompleted + 1} 次)`;
-                        btnShakeYijing.disabled = false;
-                        yijingStatus.textContent = `第 ${rollsCompleted} 爻已生成：${rollResults.join(' ')} (${lineInfo.name})`;
-                    } else {
-                        btnShakeYijing.style.display = 'none';
-                        btnResetYijing.style.display = 'inline-block';
-                        yijingStatus.textContent = "起卦完成。";
-                        calculateAndShowFinalResult();
-                    }
-
-                }, 1000); // 1秒动画时间
-            });
-
-            // 重新起卦
-            btnResetYijing.addEventListener('click', resetYijingDivination);
-
-            // 更新卦象实时显示 (从下往上)
-            function updateYijingDisplay(newLineInfo) {
-                yijingHexagrams.style.display = 'flex';
-                const lineIndex = rollsCompleted; // 1 to 6
-                const lineElement = mainHexContainer.querySelector(`#line-${lineIndex}`);
-
-                lineElement.className = `line ${newLineInfo.value === 3 || newLineInfo.value === 2 ? 'yang' : 'yin'} ${newLineInfo.isMoving ? 'moving' : ''}`;
-            }
-
-            // 起卦完成后计算最终结果
-            function calculateAndShowFinalResult() {
-                // 1. 生成本卦的二进制字符串
-                const mainHexString = currentHexagramLines.map(line => line.symbol === '—' ? '1' : '0').join('');
-
-                // 2. 生成变卦的二进制字符串 (如果有动爻)
-                let hasMovingLines = currentHexagramLines.some(line => line.isMoving);
-                let changedHexString = '';
-                if (hasMovingLines) {
-                    changedHexString = currentHexagramLines.map(line => {
-                        if (line.name === '老阳') return '0'; // 老阳变少阴
-                        if (line.name === '老阴') return '1'; // 老阴变少阳
-                        return line.symbol === '—' ? '1' : '0'; // 少阳、少阴不变
-                    }).join('');
-                }
-
-                // 3. 查找卦象数据
-                const mainHexData = yijingHexagramData[mainHexString] || { name: '未知卦', judgment: '数据完善中...', meaning: '请查找相关资料。' };
-                let changedHexData = null;
-                if (hasMovingLines) {
-                    changedHexData = yijingHexagramData[changedHexString] || { name: '未知变卦' };
-                }
-
-                // 4. 显示变卦卦象 (如果有)
-                if (hasMovingLines) {
-                    changedHexContainer.style.display = 'flex';
-                    changedHexContainer.querySelector('.hexagram-name').textContent = `变卦：${changedHexData.name}`;
-                    // 渲染变卦爻象
-                    currentHexagramLines.forEach((line, index) => {
-                        const lineIndex = index + 1;
-                        const changedLineElement = changedHexContainer.querySelector(`#changed-line-${lineIndex}`);
-                        // 计算该爻变完后的符号
-                        let finalSymbol = line.symbol;
-                        if (line.name === '老阳') finalSymbol = '- -';
-                        else if (line.name === '老阴') finalSymbol = '—';
-
-                        changedLineElement.className = `line ${finalSymbol === '—' ? 'yang' : 'yin'}`;
-                    });
-                } else {
-                    changedHexContainer.style.display = 'none';
-                }
-                mainHexContainer.querySelector('.hexagram-name').textContent = `本卦：${mainHexData.name}`;
-
-
-                // 5. 渲染详细结果
-                yijingResultArea.classList.add('active');
-                let resultHtml = `
-                    <h4>【本卦：${mainHexData.name}】</h4>
-                    <p><strong>卦辞：</strong>${mainHexData.judgment}</p>
-                    <p><strong>大意：</strong>${mainHexData.meaning}</p>
-                    <p><strong>运势断语：</strong>${mainHexData.fortune}</p>
-                `;
-
-                if (hasMovingLines) {
-                    resultHtml += `
-                        <hr>
-                        <h4>【由于有动爻，转变为 => 变卦：${changedHexData.name}】</h4>
-                        <p>占卜依据：本卦为体，变卦为用。需结合动爻爻辞和变卦进行判断。（此处简化，仅显示变卦大意）</p>
-                        <p><strong>变卦大意：</strong>${changedHexData.meaning || '无'}</p>
-                    `;
-                } else {
-                    resultHtml += `
-                        <hr>
-                        <p><strong>注意：</strong>此卦无动爻，以本卦卦辞为主进行判断。</p>
-                    `;
-                }
-
-                yijingResultArea.innerHTML = resultHtml;
-            }
-
-            // 重置金钱卦状态
-            function resetYijingDivination() {
-                rollsCompleted = 0;
-                currentHexagramLines = [];
-                btnShakeYijing.style.display = 'inline-block';
-                btnShakeYijing.disabled = false;
-                btnShakeYijing.textContent = '摇动硬币 (第 1 次)';
-                btnResetYijing.style.display = 'none';
-                yijingStatus.textContent = '';
-                yijingCoins.style.display = 'none';
-                yijingHexagrams.style.display = 'none';
-                changedHexContainer.style.display = 'none';
-                yijingResultArea.classList.remove('active');
-                yijingResultArea.innerHTML = '';
-                // 清空本卦爻象显示
-                for (let i = 1; i <= 6; i++) {
-                    mainHexContainer.querySelector(`#line-${i}`).className = 'line';
-                    changedHexContainer.querySelector(`#changed-line-${i}`).className = 'line';
-                }
-            }
-        });
-    </script>
+// 初始化
+render();
+</script>
 </body>
 </html>
