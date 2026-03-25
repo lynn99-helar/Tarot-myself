@@ -6,7 +6,7 @@
 <title>九天玄法 - 旗舰版</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
 <style>
-/* ── 延续并增强你原有的所有 UI 样式 ── */
+/* ── 严格保留你原有的 UI 体系 ── */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#F4F1EB;--paper:#FDFAF4;--ink:#1A1814;--mid:#5A5650;--dim:#9A9490;
@@ -18,159 +18,155 @@
   --line:rgba(176,168,152,.14);--acc:#C4956A;--accl:rgba(196,149,106,.12);--cb:#0E0B08;
   --gold:#D4B07A;--rose:#D4887A;--blue:#7AA0C6;--grn:#7AAA7A;
 }
-html,body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min-height:100vh;transition:all .3s;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
+html,body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min-height:100vh;transition:all .3s}
+body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
 
 #app{max-width:480px;margin:0 auto;padding:20px 16px 120px;position:relative;z-index:1}
-.screen{animation:fadeIn .4s ease both}
-@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-/* ── 扇形抽牌系统 ── */
-#fan-overlay{position:fixed;inset:0;background:var(--bg);z-index:2000;display:none;flex-direction:column;align-items:center;overflow:hidden}
-#fan-table{position:relative;width:100%;height:70vh;margin-top:5vh;perspective:1200px}
-.dc{position:absolute;width:65px;height:105px;left:calc(50% - 32px);bottom:15%;background:var(--cb);border:1.5px solid var(--gold);border-radius:5px;transform-origin:center 320%;transition:all .3s cubic-bezier(0.23, 1, 0.32, 1);cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
-.dc:hover{transform:rotate(var(--r)) translateY(-35px) !important;z-index:100!important;box-shadow:0 15px 30px rgba(0,0,0,0.6)}
-.dc.selected{opacity:0;transform:scale(0) translateY(-200px) !important;pointer-events:none}
+/* ── 扇形抽牌区 ── */
+.fan-overlay{position:fixed;inset:0;background:var(--bg);z-index:2000;display:none;flex-direction:column;align-items:center;overflow:hidden}
+.fan-table{position:relative;width:100%;height:65vh;margin-top:5vh;perspective:1200px}
+.dc{position:absolute;width:65px;height:105px;left:calc(50% - 32px);bottom:10%;background:var(--cb);border:1.5px solid var(--gold);border-radius:4px;transform-origin:center 300%;transition:all .3s ease;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+.dc:hover{transform:rotate(var(--r)) translateY(-30px) !important;z-index:100!important}
+.dc.picked{opacity:0;transform:scale(0) translateY(-100px) !important;pointer-events:none}
 
-/* ── 记录卡片样式 ── */
-.record-card{background:var(--paper);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid var(--line);box-shadow:0 4px 15px rgba(0,0,0,0.03)}
-.card-grid{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px 0}
-.card-unit{display:flex;flex-direction:column;align-items:center;width:85px}
-.tarot-img{width:80px;height:130px;background:var(--cb);border-radius:4px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;transition:.6s}
-.tarot-img img{width:100%;height:100%;object-fit:cover}
+/* ── 牌阵卡片（纯净版） ── */
+.record-item{background:var(--paper);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid var(--line);box-shadow:0 4px 15px rgba(0,0,0,0.03)}
+.card-flex{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px 0}
+.card-unit{display:flex;flex-direction:column;align-items:center;width:80px}
+.tarot-img{width:75px;height:120px;background:var(--cb);border-radius:4px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center}
 .tarot-img.rev{transform:rotate(180deg)}
-.card-label{margin-top:8px;font-size:.75rem;font-weight:600;color:var(--mid);text-align:center;line-height:1.3}
+.tarot-img img{width:100%;height:100%;object-fit:cover}
+.card-name-tag{margin-top:8px;font-size:.7rem;font-weight:600;color:var(--mid);text-align:center}
 
 /* ── 金钱卦排盘 ── */
-.gua-panel{background:var(--paper);padding:25px;border-radius:15px;border:1px solid var(--line);margin-bottom:20px}
-.hex-display{display:flex;justify-content:space-around;margin-top:20px}
-.yao-stack{display:flex;flex-direction:column-reverse;gap:10px;align-items:center}
-.yao-line{width:100px;height:12px;background:var(--ink);position:relative}
-.yao-line.yin::after{content:'';position:absolute;left:40%;width:20%;height:100%;background:var(--paper)}
-.yao-mark{position:absolute;right:-35px;font-size:.7rem;color:var(--rose);font-weight:700}
-.hex-title{margin-bottom:12px;color:var(--acc);font-weight:600;font-size:.85rem}
+.gua-box{background:var(--paper);padding:20px;border-radius:12px;border:1px solid var(--line);margin-bottom:20px}
+.hex-wrap{display:flex;justify-content:space-around;margin-top:20px}
+.yao-stack{display:flex;flex-direction:column-reverse;gap:8px;align-items:center}
+.yao-l{width:90px;height:10px;background:var(--ink);position:relative}
+.yao-l.yin::after{content:'';position:absolute;left:40%;width:20%;height:100%;background:var(--paper)}
+.yao-m{position:absolute;right:-35px;font-size:.65rem;color:var(--rose);font-weight:700}
+.hex-label{margin-bottom:10px;font-size:.8rem;color:var(--acc);font-weight:600}
 
-/* ── 答案之书 ── */
-#book-modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px}
-.book-paper{background:var(--paper);width:100%;max-width:300px;padding:60px 30px;text-align:center;border-radius:4px 15px 15px 4px;box-shadow:-12px 0 40px rgba(0,0,0,0.5)}
+/* 按钮 */
+.btn{width:100%;padding:14px;background:var(--ink);color:var(--bg);border:none;border-radius:8px;font-size:.9rem;cursor:pointer;margin-bottom:12px}
+.btn-o{background:transparent;border:1px solid var(--acc);color:var(--acc)}
 
-/* 按钮与导航 */
-.btn{width:100%;padding:14px;background:var(--ink);color:var(--bg);border:none;border-radius:8px;font-size:.9rem;cursor:pointer;margin-bottom:10px}
-.btn-ghost{background:transparent;border:1px solid var(--acc);color:var(--acc)}
-.nav-bar{position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-top:1px solid var(--line);display:flex;padding:10px 0 env(safe-area-inset-bottom);z-index:1000}
-.nav-item{flex:1;text-align:center;font-size:.7rem;color:var(--dim);cursor:pointer}
-.nav-item.active{color:var(--acc)}
+/* 底部导航 */
+.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-top:1px solid var(--line);display:flex;padding:10px 0 env(safe-area-inset-bottom);z-index:1000}
+.tab-i{flex:1;text-align:center;font-size:.7rem;color:var(--dim);cursor:pointer}
+.tab-i.active{color:var(--acc)}
+
+/* 答案之书 */
+#book-ui{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px}
+.book-p{background:var(--paper);width:100%;max-width:300px;padding:60px 30px;text-align:center;border-radius:4px 15px 15px 4px;box-shadow:-12px 0 40px rgba(0,0,0,0.5)}
 </style>
 </head>
 <body class="light">
 
 <div id="app">
-  <div id="sc-tarot" class="screen">
-    <div style="margin-bottom:30px">
+  <div id="page-tarot">
+    <div style="margin-bottom:25px">
       <h2 style="font-weight:400;letter-spacing:1px">塔罗占卜</h2>
-      <p style="font-size:.7rem;color:var(--dim)">TAROT ARCHIVE</p>
+      <p style="font-size:.65rem;color:var(--dim)">TAROT ARCHIVE</p>
     </div>
     
-    <textarea id="q-input" placeholder="心中默念你的问题..." style="width:100%;height:80px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:15px;font-family:inherit"></textarea>
-    <button class="btn" onclick="openFan()">开始抽牌 (推开扇形阵)</button>
-    <button class="btn btn-ghost" onclick="toggleBook(true)">翻开答案之书</button>
+    <textarea id="q-text" placeholder="心中默念你的问题..." style="width:100%;height:80px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:15px;font-family:inherit;color:var(--ink)"></textarea>
+    <button class="btn" onclick="startFan()">推开扇形牌阵</button>
+    <button class="btn btn-o" onclick="openBook()">翻开《答案之书》</button>
     
-    <div id="records-list" style="margin-top:30px">
-      </div>
+    <div id="history-list" style="margin-top:30px"></div>
   </div>
 
-  <div id="sc-gua" class="screen" style="display:none">
-    <div style="margin-bottom:30px">
-      <h2 style="font-weight:400;letter-spacing:1px">金钱排盘</h2>
-      <p style="font-size:.7rem;color:var(--dim)">I-CHING CASTING</p>
+  <div id="page-gua" style="display:none">
+    <div style="margin-bottom:25px">
+      <h2 style="font-weight:400;letter-spacing:1px">金钱起卦</h2>
+      <p style="font-size:.65rem;color:var(--dim)">I-CHING CASTING</p>
     </div>
     
-    <div class="gua-panel">
-      <button class="btn" id="roll-btn" onclick="rollGua()">掷钱起卦 (第 1 次)</button>
-      <div class="hex-display" id="gua-res-area" style="display:none">
+    <div class="gua-box">
+      <button class="btn" id="btn-roll" onclick="roll()">掷钱起卦 (第 1 次)</button>
+      <div class="hex-wrap" id="gua-render" style="display:none">
         <div class="yao-stack">
-          <div class="hex-title">本卦</div>
-          <div id="main-hex"></div>
+          <div class="hex-label">本卦</div>
+          <div id="hex-main"></div>
         </div>
-        <div class="yao-stack" id="change-hex-box" style="display:none">
-          <div class="hex-title">变卦</div>
-          <div id="change-hex"></div>
+        <div class="yao-stack" id="hex-change-box" style="display:none">
+          <div class="hex-label">变卦</div>
+          <div id="hex-change"></div>
         </div>
       </div>
-      <button class="btn btn-ghost" id="reset-gua" style="display:none;margin-top:20px" onclick="resetGua()">重新起卦</button>
+      <button class="btn btn-o" id="btn-reset-gua" style="display:none;margin-top:20px" onclick="resetGua()">重新起卦</button>
     </div>
   </div>
 </div>
 
-<div class="nav-bar">
-  <div class="nav-item active" onclick="showTab('tarot')">◈<br>塔罗</div>
-  <div class="nav-item" onclick="showTab('gua')">卦<br>金钱卦</div>
-  <div class="nav-item" onclick="toggleDark()">◐<br>外观</div>
-</div>
-
-<div id="fan-overlay">
+<div class="fan-overlay" id="fan-ui">
   <div style="margin-top:40px;text-align:center">
     <h3 style="font-weight:400">请抽取 3 张牌</h3>
-    <p id="fan-count" style="font-size:.8rem;color:var(--mid);margin-top:5px">已选择: 0 / 3</p>
+    <p id="fan-tip" style="font-size:.75rem;color:var(--mid);margin-top:5px">已选择: 0 / 3</p>
   </div>
-  <div id="fan-table"></div>
-  <button class="btn-ghost" style="width:120px;margin-bottom:40px" onclick="toggleFan(false)">取消</button>
+  <div class="fan-table" id="fan-deck"></div>
+  <button class="btn-o" style="width:120px;margin-bottom:40px" onclick="closeFan()">取消</button>
 </div>
 
-<div id="book-modal" onclick="toggleBook(false)">
-  <div class="book-paper" onclick="event.stopPropagation()">
+<div id="book-ui" onclick="this.style.display='none'">
+  <div class="book-p" onclick="event.stopPropagation()">
     <div id="book-msg" style="font-size:1.1rem;min-height:80px;display:flex;align-items:center;justify-content:center">心中默念，然后翻开</div>
     <button class="btn" style="margin-top:30px" onclick="drawBook()">翻开此页</button>
   </div>
 </div>
 
-<script>
-// ── 核心常量与初始化 ──
-const TAROT_NAMES = ["愚者","魔术师","女祭司","女皇","皇帝","教皇","恋人","战车","力量","隐士","命运之轮","正义","倒吊人","死神","节制","恶魔","高塔","星星","月亮","太阳","审判","世界"];
-const BOOK_ANS = ["顺其自然","目前时机尚不成熟","大胆去尝试","相信你的第一直觉","换个环境思考会有不同发现","答案就在你身边","保持现状即是最好的选择","去问问你最信任的人"];
+<div class="tabs">
+  <div class="tab-i active" onclick="go('tarot')">◈<br>塔罗</div>
+  <div class="tab-i" onclick="go('gua')">卦<br>起卦</div>
+  <div class="tab-i" onclick="tglDark()">◐<br>主题</div>
+</div>
 
-let S = {
-  tab: 'tarot',
-  isDark: false,
+<script>
+// ── 数据初始化（严格保留你的原始结构） ──
+const T_NAMES = ["愚者","魔术师","女祭司","女皇","皇帝","教皇","恋人","战车","力量","隐士","命运之轮","正义","倒吊人","死神","节制","恶魔","高塔","星星","月亮","太阳","审判","世界"];
+const B_ANS = ["顺其自然","目前时机尚未成熟","大胆去尝试","相信你的第一直觉","答案就在你身边","保持现状即是最好的选择","去问问你最信任的人","换个方向思考"];
+
+let s = {
   records: JSON.parse(localStorage.getItem('tarot_records') || '[]'),
-  currentDrawn: [],
-  gua: []
+  cur: [],
+  gua: [],
+  dark: false
 };
 
-// ── 页面切换 ──
-function showTab(t) {
-  S.tab = t;
-  document.getElementById('sc-tarot').style.display = t==='tarot'?'block':'none';
-  document.getElementById('sc-gua').style.display = t==='gua'?'block':'none';
-  document.querySelectorAll('.nav-item').forEach((el,i)=>el.classList.toggle('active',(t==='tarot'&&i===0)||(t==='gua'&&i===1)));
+function go(t) {
+  document.getElementById('page-tarot').style.display = t==='tarot'?'block':'none';
+  document.getElementById('page-gua').style.display = t==='gua'?'block':'none';
+  document.querySelectorAll('.tab-i').forEach((el,i)=>el.classList.toggle('active',(t==='tarot'&&i===0)||(t==='gua'&&i===1)));
 }
 
-function toggleDark() {
-  S.isDark = !S.isDark;
-  document.body.className = S.isDark ? 'dark' : 'light';
+function tglDark() {
+  s.dark = !s.dark;
+  document.body.className = s.dark ? 'dark' : 'light';
 }
 
-// ── 历史记录渲染（找回你的牌阵） ──
-function renderRecords() {
-  const list = document.getElementById('records-list');
-  if (S.records.length === 0) {
-    list.innerHTML = `<p style="text-align:center;color:var(--dim);font-size:.8rem">暂无占卜记录</p>`;
+// ── 塔罗记录渲染（找回你的牌阵） ──
+function render() {
+  const list = document.getElementById('history-list');
+  if(!s.records.length) {
+    list.innerHTML = `<p style="text-align:center;color:var(--dim);font-size:.7rem">暂无占卜记录</p>`;
     return;
   }
-  list.innerHTML = S.records.map((r, idx) => `
-    <div class="record-card">
-      <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--dim);margin-bottom:10px">
+  list.innerHTML = s.records.map((r, i) => `
+    <div class="record-item">
+      <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--dim);margin-bottom:10px">
         <span>${new Date(r.date).toLocaleString()}</span>
-        <span style="color:var(--rose);cursor:pointer" onclick="deleteRecord(${idx})">删除</span>
+        <span style="color:var(--rose);cursor:pointer" onclick="del(${i})">删除</span>
       </div>
-      ${r.q ? `<p style="font-size:.85rem;margin-bottom:15px">问：${r.q}</p>` : ''}
-      <div class="card-grid">
+      ${r.q ? `<p style="font-size:.8rem;margin-bottom:12px;color:var(--mid)">问：${r.q}</p>` : ''}
+      <div class="card-flex">
         ${r.cards.map(c => `
           <div class="card-unit">
             <div class="tarot-img ${c.rev?'rev':''}">
-              <img src="https://api.placeholder.com/80/130?text=TAROT">
+              <img src="https://api.placeholder.com/80/130?text=Card">
             </div>
-            <div class="card-label">${c.name}<br>${c.rev?'(逆位)':'(正位)'}</div>
+            <div class="card-name-tag">${c.name}<br>${c.rev?'(逆位)':'(正位)'}</div>
           </div>
         `).join('')}
       </div>
@@ -178,105 +174,99 @@ function renderRecords() {
   `).reverse().join('');
 }
 
-function deleteRecord(idx) {
-  if(confirm('确认删除这条记录？')) {
-    S.records.splice(S.records.length - 1 - idx, 1);
-    localStorage.setItem('tarot_records', JSON.stringify(S.records));
-    renderRecords();
+function del(i) {
+  if(confirm('确认删除？')) {
+    s.records.splice(s.records.length - 1 - i, 1);
+    localStorage.setItem('tarot_records', JSON.stringify(s.records));
+    render();
   }
 }
 
 // ── 扇形抽牌逻辑 ──
-function openFan() {
-  const table = document.getElementById('fan-table');
-  table.innerHTML = '';
-  S.currentDrawn = [];
-  toggleFan(true);
+function startFan() {
+  const deck = document.getElementById('fan-deck');
+  deck.innerHTML = '';
+  s.cur = [];
+  document.getElementById('fan-ui').style.display = 'flex';
+  document.getElementById('fan-tip').innerText = `已选择: 0 / 3`;
+  
   for(let i=0; i<22; i++) {
-    const angle = -75 + (i * 150 / 21);
-    const card = document.createElement('div');
-    card.className = 'dc';
-    card.style.setProperty('--r', angle+'deg');
-    card.style.transform = `rotate(${angle}deg)`;
-    card.onclick = function() {
-      if(S.currentDrawn.length >= 3) return;
-      this.classList.add('selected');
+    const r = -75 + (i * 150 / 21);
+    const c = document.createElement('div');
+    c.className = 'dc';
+    c.style.setProperty('--r', r+'deg');
+    c.style.transform = `rotate(${r}deg)`;
+    c.onclick = function() {
+      if(s.cur.length >= 3) return;
+      this.classList.add('picked');
       const id = Math.floor(Math.random()*22);
       const rev = Math.random()>0.7;
-      S.currentDrawn.push({name: TAROT_NAMES[id], rev});
-      document.getElementById('fan-count').innerText = `已选择: ${S.currentDrawn.length} / 3`;
-      if(S.currentDrawn.length === 3) {
+      s.cur.push({name: T_NAMES[id], rev});
+      document.getElementById('fan-tip').innerText = `已选择: ${s.cur.length} / 3`;
+      if(s.cur.length === 3) {
         setTimeout(()=>{
-          toggleFan(false);
-          saveAndRender();
+          closeFan();
+          save();
         }, 600);
       }
     };
-    table.appendChild(card);
+    deck.appendChild(c);
   }
 }
-function toggleFan(s) { document.getElementById('fan-overlay').style.display = s?'flex':'none'; }
+function closeFan() { document.getElementById('fan-ui').style.display='none'; }
 
-function saveAndRender() {
-  const q = document.getElementById('q-input').value;
-  S.records.push({
-    date: Date.now(),
-    q: q,
-    cards: S.currentDrawn
-  });
-  localStorage.setItem('tarot_records', JSON.stringify(S.records));
-  document.getElementById('q-input').value = '';
-  renderRecords();
+function save() {
+  const q = document.getElementById('q-text').value;
+  s.records.push({ date: Date.now(), q, cards: s.cur });
+  localStorage.setItem('tarot_records', JSON.stringify(s.records));
+  document.getElementById('q-text').value = '';
+  render();
 }
 
 // ── 金钱卦逻辑 ──
-function rollGua() {
-  if(S.gua.length >= 6) return;
+function roll() {
+  if(s.gua.length >= 6) return;
   const h = [Math.random()>0.5, Math.random()>0.5, Math.random()>0.5].filter(x=>x).length;
-  let y = { type:'yang', m:'' };
-  if(h===3) y={type:'yang', m:'× 老阳'};
-  else if(h===0) y={type:'yin', m:'○ 老阴'};
-  else if(h===2) y={type:'yin', m:''};
-  S.gua.push(y);
-  renderGua();
-  if(S.gua.length===6) {
-    document.getElementById('roll-btn').style.display='none';
-    document.getElementById('reset-gua').style.display='block';
+  let y = { t:'yang', m:'' };
+  if(h===3) y={t:'yang', m:'× 老阳'};
+  else if(h===0) y={t:'yin', m:'○ 老阴'};
+  else if(h===2) y={t:'yin', m:''};
+  s.gua.push(y);
+  drawGua();
+  if(s.gua.length===6) {
+    document.getElementById('btn-roll').style.display='none';
+    document.getElementById('btn-reset-gua').style.display='block';
   } else {
-    document.getElementById('roll-btn').innerText = `掷钱起卦 (第 ${S.gua.length+1} 次)`;
+    document.getElementById('btn-roll').innerText = `掷钱起卦 (第 ${s.gua.length+1} 次)`;
   }
 }
-function renderGua() {
-  document.getElementById('gua-res-area').style.display='flex';
-  document.getElementById('main-hex').innerHTML = S.gua.map(y=>`<div class="yao-line ${y.type==='yin'?'yin':''}"><span class="yao-mark">${y.m}</span></div>`).join('');
-  if(S.gua.length===6 && S.gua.some(y=>y.m!=='')) {
-    document.getElementById('change-hex-box').style.display='block';
-    document.getElementById('change-hex').innerHTML = S.gua.map(y=>{
-      let t = y.type;
+
+function drawGua() {
+  document.getElementById('gua-render').style.display='flex';
+  document.getElementById('hex-main').innerHTML = s.gua.map(y=>`<div class="yao-l ${y.t==='yin'?'yin':''}"><span class="yao-m">${y.m}</span></div>`).join('');
+  if(s.gua.length===6 && s.gua.some(y=>y.m!=='')) {
+    document.getElementById('hex-change-box').style.display='block';
+    document.getElementById('hex-change').innerHTML = s.gua.map(y=>{
+      let t = y.t;
       if(y.m.includes('老阳')) t='yin';
       if(y.m.includes('老阴')) t='yang';
-      return `<div class="yao-line ${t==='yin'?'yin':''}"></div>`;
+      return `<div class="yao-l ${t==='yin'?'yin':''}"></div>`;
     }).join('');
   }
 }
 function resetGua() {
-  S.gua=[]; document.getElementById('gua-res-area').style.display='none';
-  document.getElementById('roll-btn').style.display='block';
-  document.getElementById('roll-btn').innerText='掷钱起卦 (第 1 次)';
-  document.getElementById('reset-gua').style.display='none';
+  s.gua=[]; document.getElementById('gua-render').style.display='none';
+  document.getElementById('btn-roll').style.display='block';
+  document.getElementById('btn-roll').innerText='掷钱起卦 (第 1 次)';
+  document.getElementById('btn-reset-gua').style.display='none';
 }
 
 // ── 答案之书 ──
-function toggleBook(s) {
-  document.getElementById('book-modal').style.display = s?'flex':'none';
-  document.getElementById('book-msg').innerText = '心中默念，然后翻开';
-}
-function drawBook() {
-  document.getElementById('book-msg').innerText = BOOK_ANS[Math.floor(Math.random()*BOOK_ANS.length)];
-}
+function openBook() { document.getElementById('book-ui').style.display='flex'; document.getElementById('book-msg').innerText='心中默念，然后翻开'; }
+function drawBook() { document.getElementById('book-msg').innerText = B_ANS[Math.floor(Math.random()*B_ANS.length)]; }
 
-// ── 初始化 ──
-renderRecords();
+// 初始化
+render();
 </script>
 </body>
 </html>
