@@ -3,396 +3,312 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>塔罗占卜与金钱卦</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<title>全能占卜空间 | 塔罗·金钱卦·答案之书</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-/* 基础变量与复位 */
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#F4F1EB;--paper:#FDFAF4;--ink:#1A1814;--mid:#5A5650;--dim:#9A9490;
-  --line:rgba(90,86,80,.16);--acc:#8B6F47;--accl:rgba(139,111,71,.10);--cb:#1E1A16;
-  --gold:#C8A96E;--rose:#C4786A;--blue:#5B7FA6;--grn:#5A7A5A;
+/* --- 基础与全局样式 --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #faf7f0; --ink: #1e1e1e; --gold: #d4af37; --dim: #888; 
+  --paper: #fff; --line: rgba(0,0,0,0.1); --acc: #8b6f47;
 }
-.dark{
-  --bg:#120F0C;--paper:#1C1814;--ink:#EDE9E1;--mid:#B0A898;--dim:#6A6560;
-  --line:rgba(176,168,152,.14);--acc:#C4956A;--accl:rgba(196,149,106,.12);--cb:#0E0B08;
-  --gold:#D4B07A;--rose:#D4887A;--blue:#7AA0C6;--grn:#7AAA7A;
+body.dark {
+  --bg: #1a1919; --ink: #e0dcd0; --paper: #2a2a2a; --line: rgba(255,255,255,0.1);
 }
-html,body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min-height:100vh;transition:background .3s,color .3s;overflow-x:hidden}
-@keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
-.fu{animation:fu .4s ease both}
-textarea,input,button{font-family:'Noto Serif SC',serif}
-#app{max-width:480px;margin:0 auto;padding:22px 16px 90px;min-height:100vh}
+body { background: var(--bg); color: var(--ink); font-family: 'Noto Serif SC', serif; min-height: 100vh; overflow-x: hidden; transition: background 0.3s; }
+#app { max-width: 480px; margin: 0 auto; padding: 20px 16px 80px; }
+.btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; transition: 0.2s; font-size: 0.9rem; }
+.btn-fill { background: var(--ink); color: var(--bg); }
+.btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.input-box { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--ink); font-family: inherit; margin-bottom: 15px; outline: none; }
+.nav-tabs { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; background: var(--paper); border-top: 1px solid var(--line); padding: 10px 0; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+.nav-btn { flex: 1; background: none; border: none; color: var(--dim); cursor: pointer; font-size: 0.8rem; }
+.nav-btn.active { color: var(--gold); font-weight: bold; }
 
-/* 通用按钮与 UI */
-.btn{cursor:pointer;letter-spacing:.05em;border:none;border-radius:6px;transition:all .15s;padding:10px 18px;font-size:.8rem}
-.btn:active{transform:scale(.97)}
-.btn-fill{background:var(--ink);color:var(--bg)}.btn-fill:hover{opacity:.78}
-.dark .btn-fill{background:var(--acc);color:#1A1814}
-.btn-ghost{background:transparent;color:var(--mid);border:1px solid var(--line)}.btn-ghost:hover{border-color:var(--acc);color:var(--acc)}
-.btn-sm{padding:7px 13px;font-size:.74rem}.btn:disabled{opacity:.35;cursor:default}
-.iBtn{background:none;border:1px solid var(--line);cursor:pointer;color:var(--dim);font-size:.7rem;padding:5px 11px;border-radius:20px;transition:all .15s;}
-.iBtn:hover{border-color:var(--acc);color:var(--acc)}
-.divider{height:1px;background:linear-gradient(to right,transparent,var(--acc),transparent);opacity:.3;margin:16px 0}
-.nav-row{display:flex;align-items:center;gap:10px;margin-bottom:22px}
-.back-btn{background:none;border:none;cursor:pointer;color:var(--dim);font-size:.8rem;padding:4px 0}
-.list-item{padding:14px 14px;border-bottom:1px solid var(--line);border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .15s}
-.list-item:hover{background:var(--accl)}
-.li-title{font-size:.93rem;font-weight:500;color:var(--ink)}.li-sub{font-size:.7rem;color:var(--dim);margin-top:2px}
-.arr{color:var(--acc)}
-.input-box{width:100%;background:transparent;border:1px solid var(--line);padding:10px;border-radius:3px;margin-bottom:14px;color:var(--ink);resize:none;outline:none;}
-.input-box:focus{border-color:var(--acc)}
-
-/* 登录、首页与牌格布局 (简写，保持原有风格) */
-#login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-#login-box{width:100%;max-width:340px;animation:fu .5s ease both}
-.l-title{font-size:2.1rem;font-weight:300;letter-spacing:.1em;margin-bottom:4px}
-.h-title{font-size:2.3rem;font-weight:300;letter-spacing:.08em;line-height:1;margin-bottom:4px}
-.home-label{font-size:.56rem;letter-spacing:.22em;color:var(--acc);margin-bottom:6px;text-transform:uppercase}
-#home-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.h-actions{display:flex;flex-direction:column;gap:7px;align-items:flex-end}
-.nav-icon{width:32px;height:32px;border-radius:50%;background:var(--accl);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--acc);flex-shrink:0}
-.card-back{border-radius:4px;cursor:pointer;background:var(--cb);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.22);transition:transform .18s}
-.card-back:hover{transform:translateY(-4px) scale(1.03)}
-.cb-inner{width:100%;height:100%;border-radius:3px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(200,169,110,.2)}
-.cb-star{color:rgba(200,169,110,.35);font-size:.8rem}
-.cf{border-radius:5px;background:var(--paper);border:1px solid rgba(139,111,71,.18);display:flex;flex-direction:column;align-items:center;justify-content:space-between;overflow:hidden}
-.cf.rev{transform:rotate(180deg)}
-.cf-top,.cf-bot{font-size:.44rem;color:var(--acc);text-align:center;line-height:1.2;font-weight:600;padding:2px}
-.cf-art{flex:1;display:flex;align-items:center;justify-content:center;width:100%}
-.card-grid{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:14px}
-.card-slot{display:flex;flex-direction:column;align-items:center;gap:4px}
-.pos-label{font-size:.5rem;color:var(--dim);text-align:center}
-
-/* ──────────────── 新版金钱卦 (I Ching) ──────────────── */
-.gua-wrap{display:flex;justify-content:center;gap:30px;padding:20px 0;margin-bottom:15px;align-items:flex-end}
-.gua-col{display:flex;flex-direction:column-reverse;gap:6px;align-items:center}
-.gua-title{font-size:.7rem;color:var(--acc);margin-bottom:10px;text-align:center;letter-spacing:.2em}
-.gua-line{width:80px;height:12px;display:flex;align-items:center;justify-content:center;position:relative}
-.line-solid{width:100%;height:6px;background:var(--ink);border-radius:1px;box-shadow:0 1px 2px rgba(0,0,0,0.1)}
-.line-broken{width:100%;height:6px;display:flex;justify-content:space-between}
-.line-broken::before,.line-broken::after{content:'';width:42%;height:100%;background:var(--ink);border-radius:1px;box-shadow:0 1px 2px rgba(0,0,0,0.1)}
-.line-moving{position:absolute;right:-20px;font-size:.6rem;color:var(--rose);font-weight:bold}
-.coin-box{display:flex;justify-content:center;gap:20px;margin:20px 0 30px}
-
-/* 仿古铜钱设计 */
+/* --- 金钱卦 (铜钱与排盘) --- */
+.gua-box { text-align: center; margin-top: 20px; }
+.coin-container { display: flex; justify-content: center; gap: 20px; margin: 30px 0; }
 .coin {
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #E6C27A, #B8860B);
-  border: 3px solid #8B6508;
-  box-shadow: inset 0 0 8px rgba(0,0,0,0.4), 0 4px 6px rgba(0,0,0,0.3);
+  width: 50px; height: 50px; border-radius: 50%;
+  background: radial-gradient(circle, #e6c27a 0%, #b8860b 100%);
+  border: 2px solid #8b6508;
   display: flex; align-items: center; justify-content: center;
-  position: relative;
-  transition: transform 0.1s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 0 5px rgba(255,255,255,0.5);
+  position: relative; transition: transform 0.6s cubic-bezier(0.4, 2, 0.2, 1);
 }
+/* 铜钱内方孔 */
 .coin::after {
-  content: '';
-  position: absolute;
-  width: 14px; height: 14px;
-  background: var(--bg); /* 镂空效果 */
-  border: 2px solid #8B6508;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+  content: ''; width: 16px; height: 16px; background: var(--bg);
+  border: 2px solid #8b6508; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
 }
-.coin span {
-  position: absolute;
-  font-size: 0.65rem;
-  color: #4A3300;
-  font-weight: bold;
-  z-index: 2;
-  text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+/* 铜钱文字 */
+.coin::before {
+  content: '通 宝'; position: absolute; width: 100%; text-align: center;
+  font-size: 0.6rem; color: #4a3300; font-weight: bold; letter-spacing: 16px;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.3); z-index: 10;
 }
-.coin-text-top { top: 4px; }
-.coin-text-bot { bottom: 4px; }
-.coin-text-lft { left: 4px; }
-.coin-text-rgt { right: 4px; }
-@keyframes coinToss3D {
-  0% { transform: translateY(0) rotateX(0) scale(1); }
-  50% { transform: translateY(-40px) rotateX(540deg) scale(1.1); }
-  100% { transform: translateY(0) rotateX(1080deg) scale(1); }
-}
-.coin.tossing { animation: coinToss3D 0.7s cubic-bezier(0.25, 1, 0.5, 1); }
+.coin.flip { transform: rotateY(1080deg) scale(1.2); }
+.lines-container { display: flex; justify-content: center; gap: 40px; margin-bottom: 20px; }
+.hexagram { display: flex; flex-direction: column-reverse; gap: 6px; align-items: center; }
+.line { width: 80px; height: 10px; display: flex; justify-content: space-between; position: relative; }
+.line-yang { background: var(--ink); width: 100%; border-radius: 2px; }
+.line-yin::before, .line-yin::after { content: ''; width: 45%; height: 100%; background: var(--ink); border-radius: 2px; }
+.line-moving::after { content: '×'; position: absolute; right: -20px; top: -5px; color: #c4786a; font-size: 0.8rem; }
+.line-moving-yang::after { content: '○'; }
 
-/* ──────────────── 新版沉浸式答案之书 (Book of Answers) ──────────────── */
-#book-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;perspective:1200px}
-#book-msg{color:var(--gold);font-size:1.1rem;letter-spacing:.1em;margin-bottom:30px;height:24px;text-align:center;font-weight:300;text-shadow:0 2px 4px rgba(0,0,0,.5)}
-.book-container{width:260px;height:360px;position:relative;transform-style:preserve-3d;transition:transform 0.5s}
-/* 书本页面内容 (在底下) */
-.book-page{position:absolute;inset:0;background:var(--paper);border-radius:4px 12px 12px 4px;box-shadow:inset 15px 0 20px rgba(0,0,0,.05), 0 10px 30px rgba(0,0,0,.5);display:flex;flex-direction:column;padding:40px 25px;border-right:3px solid #E8E0D0;border-bottom:3px solid #E8E0D0;border-left:1px solid #ccc;z-index:1}
-.book-pg-num{font-size:.65rem;color:var(--dim);text-align:center;font-family:'IM Fell English',serif;margin-bottom:20px}
-.book-title{font-size:1.2rem;font-weight:500;color:var(--ink);text-align:center;margin-bottom:20px}
-.book-text{font-size:.95rem;line-height:2;color:var(--mid);font-style:italic;text-align:justify}
-/* 实体书封面 (在上面) */
-.book-cover{position:absolute;inset:0;background:linear-gradient(135deg, #2C1E16, #4A3320);border-radius:4px 12px 12px 4px;box-shadow:inset 4px 0 10px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.6);transform-origin:left center;transition:transform 1.4s cubic-bezier(0.25, 1, 0.3, 1);z-index:2;display:flex;align-items:center;justify-content:center;flex-direction:column;border-left:8px solid #1A110C}
-.book-cover::after{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:rgba(255,255,255,.1)}
-.cover-title{color:#E6C27A;font-size:1.8rem;letter-spacing:.15em;writing-mode:vertical-rl;text-shadow:0 2px 4px rgba(0,0,0,.8);font-family:'Noto Serif SC',serif;font-weight:300}
-/* 翻开动画类 */
-.book-cover.open{transform:rotateY(-140deg)}
+/* --- 答案之书 (3D 翻书) --- */
+#book-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; perspective: 1000px; }
+#countdown-text { color: var(--gold); font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 30px; height: 30px; }
+.book-wrapper { width: 220px; height: 320px; position: relative; transform-style: preserve-3d; }
+.book-page { position: absolute; inset: 0; background: #fff; color: #333; border-radius: 2px 10px 10px 2px; padding: 30px 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: inset 10px 0 20px rgba(0,0,0,0.05); border: 1px solid #ddd; z-index: 1; }
+.book-cover { position: absolute; inset: 0; background: linear-gradient(135deg, #3a2a20, #1a110c); border-radius: 2px 10px 10px 2px; transform-origin: left; transition: transform 1.5s ease-in-out; z-index: 2; display: flex; align-items: center; justify-content: center; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); border-left: 6px solid #000; }
+.book-cover-text { color: var(--gold); font-size: 1.5rem; letter-spacing: 5px; writing-mode: vertical-rl; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+.book-cover.open { transform: rotateY(-130deg); }
+.close-book { margin-top: 40px; background: none; border: 1px solid rgba(255,255,255,0.5); color: #fff; padding: 8px 20px; border-radius: 20px; cursor: pointer; opacity: 0; transition: opacity 1s; }
 
-/* 其他元素 */
-.sum-section{margin-top:18px;padding:16px;background:linear-gradient(135deg,var(--accl) 0%,transparent 100%);border-left:2px solid var(--acc);border-radius:0 6px 6px 0;animation:fu .4s ease}
-.sum-hdr{font-size:.7rem;color:var(--acc);letter-spacing:.12em;margin-bottom:9px;font-weight:500}
-.rec-card{border-radius:8px;background:var(--paper);border:1px solid rgba(139,111,71,.1);padding:13px 14px;margin-bottom:10px}
-.rec-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
-.rec-title{font-size:.84rem;font-weight:500;color:var(--ink)}.rec-date{font-size:.64rem;color:var(--dim)}
-.rec-btn{font-size:.64rem;padding:3px 9px;border:1px solid var(--line);border-radius:2px;background:transparent;cursor:pointer;color:var(--mid);transition:all .15s}
-.rec-q{font-size:.74rem;color:var(--mid);padding:6px 9px;background:var(--accl);border-radius:2px;margin-bottom:7px;line-height:1.6}
-.nav-tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;background:var(--paper);border-top:1px solid var(--line);z-index:200;padding:6px 0 max(6px,env(safe-area-inset-bottom));backdrop-filter:blur(12px)}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 2px;color:var(--dim)}
-.nav-btn.active{color:var(--acc)}
+/* --- 记录卡片 --- */
+.rec-card { background: var(--paper); border: 1px solid var(--line); padding: 15px; border-radius: 8px; margin-bottom: 12px; }
+.rec-title { font-weight: bold; margin-bottom: 5px; color: var(--acc); }
+.rec-date { font-size: 0.7rem; color: var(--dim); margin-bottom: 10px; }
 </style>
 </head>
 <body>
 <div id="app"></div>
+
 <script>
-'use strict';
-// ═══════════════════════════════════════ 基础数据 ═══════════════════════════════════════
-const MAJOR_WAITE = [
-  {id:0,name:"愚者",sym:"0"},{id:1,name:"魔术师",sym:"I"},{id:2,name:"女祭司",sym:"II"},{id:3,name:"女皇",sym:"III"},
-  {id:4,name:"皇帝",sym:"IV"},{id:5,name:"教皇",sym:"V"},{id:6,name:"恋人",sym:"VI"},{id:7,name:"战车",sym:"VII"},
-  {id:8,name:"力量",sym:"VIII"},{id:9,name:"隐者",sym:"IX"},{id:10,name:"命运之轮",sym:"X"},{id:11,name:"正义",sym:"XI"},
-  {id:12,name:"倒吊人",sym:"XII"},{id:13,name:"死神",sym:"XIII"},{id:14,name:"节制",sym:"XIV"},{id:15,name:"恶魔",sym:"XV"},
-  {id:16,name:"塔",sym:"XVI"},{id:17,name:"星星",sym:"XVII"},{id:18,name:"月亮",sym:"XVIII"},{id:19,name:"太阳",sym:"XIX"},
-  {id:20,name:"审判",sym:"XX"},{id:21,name:"世界",sym:"XXI"}
-];
-const SPREADS = {
-  one: {name:"每日一牌",desc:"快速获取今日指引",positions:["核心"],count:1},
-  three: {name:"时间之流",desc:"过去·现在·未来",positions:["过去","现在","未来"],count:3}
+// --- 全局状态 ---
+const S = {
+  view: 'home',
+  records: JSON.parse(localStorage.getItem('tarot_records') || '[]'),
+  iching: { lines: [], question: '' },
+  bookAnswers: [
+    "放手去做吧，宇宙在支持你。", "时机未到，需要更多的耐心。",
+    "不要怀疑你的直觉，答案早已在心中。", "换个角度看，这其实是一个礼物。",
+    "保持沉默，观察事态的发展。", "这正是你一直在寻找的突破口。"
+  ]
 };
-const BOOK_PAGES=[
-  {pg:"p.7",t:"是的",txt:"这件事指向你所渴望的方向。不是因为没有阻碍，而是因为你的内在已经知道答案。"},
-  {pg:"p.14",t:"还未到时",txt:"这扇门尚未打开，不是因为你不够好，而是因为时机还需要一些东西来成熟。耐心等待。"},
-  {pg:"p.23",t:"放下它",txt:"你一直握着的那件事，比它本身更消耗你。放下并不意味着失去，有些东西松手后才回来。"},
-  {pg:"p.42",t:"顺其自然",txt:"不要试图去控制流水的方向。现在的你只需要在水面上保持平衡，答案会在漂流中显现。"}
-];
 
-// 状态管理
-function loadRec(n){return JSON.parse(localStorage.getItem('tarot_rec_'+n)||'[]')}
-function saveRec(n,r){localStorage.setItem('tarot_rec_'+n,JSON.stringify(r))}
-let S = {
-  cu: sessionStorage.getItem('tarot_cu')||null, ls: sessionStorage.getItem('tarot_cu')?null:'main',
-  screen: 'home', theme: 'light', records: [], q: '', drawn: [], revd: [],
-  ichingLines: [], guaQ: '', // 金钱卦数据
-};
-if(S.cu) S.records = loadRec(S.cu);
-function saveSt(){if(S.cu)saveRec(S.cu,S.records)}
 const app = document.getElementById('app');
-function shuffle(a){return[...a].sort(()=>Math.random()-.5)}
 
-// SVG渲染辅助 (极简)
-function renderCf(card, rev, w, h) {
-  return `<div class="cf ${rev?'rev':''}" style="width:${w}px;height:${h}px;padding:4px">
-    <div class="cf-top">${card.sym}</div><div class="cf-art">✦</div><div class="cf-bot">${card.name}</div>
-  </div>`;
+// --- 数据持久化 ---
+function saveRecords() {
+  localStorage.setItem('tarot_records', JSON.stringify(S.records));
 }
 
-// ═══════════════════════════════════════ 页面渲染 ═══════════════════════════════════════
-function render(){
-  document.body.className = S.theme==='dark'?'dark':'';
-  if (S.ls) { app.innerHTML = renderLogin(); bindLogin(); return; }
-  let h = '';
-  switch(S.screen){
-    case 'home':    h = renderHome(); break;
-    case 'tarot':   h = renderTarot(); break;
-    case 'iching':  h = renderIChing(); break;
-    case 'book':    h = renderBookScreen(); break;
-    case 'records': h = renderRecs(); break;
-    default:        h = renderHome();
-  }
-  const navHtml = S.cu ? `<div class="nav-tabs">
-    <button class="nav-btn ${S.screen==='home'?'active':''}" data-nav="home"><span>⌂</span><span>首页</span></button>
-    <button class="nav-btn ${S.screen==='tarot'?'active':''}" data-nav="tarot"><span>✦</span><span>塔罗</span></button>
-    <button class="nav-btn ${S.screen==='iching'?'active':''}" data-nav="iching"><span>☯</span><span>金钱卦</span></button>
-    <button class="nav-btn ${S.screen==='records'?'active':''}" data-nav="records"><span>≡</span><span>记录</span></button>
-  </div>` : '';
-  app.innerHTML = `<div class="screen">${h}</div>${navHtml}`;
-  bindMain();
+// --- 路由与渲染引擎 ---
+function render() {
+  let content = '';
+  if (S.view === 'home') content = renderHome();
+  else if (S.view === 'iching') content = renderIChing();
+  else if (S.view === 'book') content = renderBook();
+  else if (S.view === 'records') content = renderRecords();
+
+  const nav = `
+    <div class="nav-tabs">
+      <button class="nav-btn ${S.view==='home'?'active':''}" onclick="nav('home')">首页</button>
+      <button class="nav-btn ${S.view==='iching'?'active':''}" onclick="nav('iching')">金钱卦</button>
+      <button class="nav-btn ${S.view==='book'?'active':''}" onclick="nav('book')">答案之书</button>
+      <button class="nav-btn ${S.view==='records'?'active':''}" onclick="nav('records')">记录</button>
+    </div>
+  `;
+  app.innerHTML = content + nav;
 }
 
-function renderLogin(){
-  if(S.ls==='main') return `<div id="login-wrap"><div id="login-box"><div class="home-label">TAROT</div><h1 class="l-title">塔罗占卜</h1><button class="btn btn-fill" id="btn-ln-new" style="width:100%">进入应用</button></div></div>`;
-  if(S.ls==='new') return `<div id="login-wrap"><div id="login-box"><input class="input-box" id="inp-name" type="text" placeholder="你的昵称"><button class="btn btn-fill" id="btn-ln-create" style="width:100%">确认</button></div></div>`;
-}
-function bindLogin(){
-  document.getElementById('btn-ln-new')?.addEventListener('click',()=>{S.ls='new';render()});
-  document.getElementById('btn-ln-create')?.addEventListener('click',()=>{
-    const n = document.getElementById('inp-name').value.trim();
-    if(n){ S.cu=n; sessionStorage.setItem('tarot_cu',n); S.ls=null; S.records=loadRec(n); render(); }
-  });
+function nav(view) { S.view = view; render(); }
+
+// --- 首页 ---
+function renderHome() {
+  return `
+    <h1 style="margin-bottom: 20px; color: var(--gold);">占卜空间</h1>
+    <p style="color: var(--dim); line-height: 1.8; margin-bottom: 30px;">
+      欢迎来到你的专属精神自留地。<br>
+      请在下方导航栏选择你需要使用的工具。
+    </p>
+    <button class="btn btn-ghost" onclick="document.body.classList.toggle('dark')">切换深色/浅色模式</button>
+  `;
 }
 
-function renderHome(){
-  return `<div id="home-top" class="fu"><div><div class="home-label">TAROT</div><h1 class="h-title">你好，${S.cu}</h1></div>
-  <div class="h-actions"><button class="iBtn" id="btn-theme">${S.theme==='light'?'🌙':'☀️'}</button></div></div><div class="divider"></div>
-  <div class="list-item fu" data-nav="tarot"><div style="display:flex;gap:12px"><div class="nav-icon">✦</div><div><div class="li-title">塔罗牌阵</div><div class="li-sub">经典排阵占卜</div></div></div></div>
-  <div class="list-item fu" data-nav="iching"><div style="display:flex;gap:12px"><div class="nav-icon">☯</div><div><div class="li-title">金钱卦</div><div class="li-sub">文王六爻排盘</div></div></div></div>
-  <div class="list-item fu" data-nav="book"><div style="display:flex;gap:12px"><div class="nav-icon">□</div><div><div class="li-title">答案之书</div><div class="li-sub">翻开一页接受指引</div></div></div></div>`;
-}
+// --- 金钱卦模块 ---
+function renderIChing() {
+  const { lines, question } = S.iching;
+  const isComplete = lines.length === 6;
+  
+  const renderHexagram = (arr, isChanged) => {
+    return arr.slice().reverse().map(val => {
+      const isYin = val === 6 || val === 8;
+      const isMoving = val === 6 || val === 9;
+      const lineClass = isYin ? 'line-yin' : 'line-yang';
+      let movingClass = '';
+      if (!isChanged && isMoving) {
+        movingClass = val === 6 ? 'line-moving' : 'line-moving-yang line-moving';
+      }
+      return `<div class="line ${lineClass} ${movingClass}"></div>`;
+    }).join('');
+  };
 
-function renderTarot(){
-  let body = '';
-  if(!S.drawn.length){
-    body = `<div class="fu"><textarea id="t-q-inp" class="input-box" placeholder="你想问什么？" rows="3"></textarea>
-    <button class="btn btn-fill" id="btn-t-draw">随机抽取时间之流(3张)</button></div>`;
-  } else {
-    const grid=S.drawn.map((item,i)=>`<div class="card-slot"><div class="pos-label">${SPREADS.three.positions[i]}</div>${renderCf(item.card, item.rev, 66, 106)}</div>`).join('');
-    body = `<div class="fu"><div class="card-grid">${grid}</div><button class="btn btn-ghost btn-sm" id="btn-t-save">保存记录</button></div>`;
-  }
-  return `<div class="nav-row"><button class="back-btn" id="btn-back">← 返回</button><span style="color:var(--line)">·</span><span style="font-size:.82rem;color:var(--mid)">塔罗牌阵</span></div>${body}`;
-}
-
-// ──────────────── 答案之书渲染与逻辑 ────────────────
-function renderBookScreen(){
-  return `<div class="nav-row"><button class="back-btn" id="btn-back">← 返回</button><span style="color:var(--line)">·</span><span style="font-size:.82rem;color:var(--mid)">答案之书</span></div>
-  <div class="fu" style="text-align:center;margin-top:60px">
-    <div style="font-size:.8rem;color:var(--mid);margin-bottom:20px">在心中默念你的问题</div>
-    <button class="btn btn-fill" id="btn-open-book">翻开答案之书</button>
-  </div>`;
-}
-function triggerBookAnim() {
-  const p = BOOK_PAGES[Math.floor(Math.random()*BOOK_PAGES.length)];
-  const ov = document.createElement('div');
-  ov.id = 'book-overlay';
-  ov.innerHTML = `
-    <div id="book-msg">深呼吸，然后倒数 3...</div>
-    <div class="book-container">
-      <div class="book-page">
-        <div class="book-pg-num">${p.pg}</div>
-        <div class="book-title">${p.t}</div>
-        <p class="book-text">${p.txt}</p>
+  let hexHTML = '';
+  if (isComplete) {
+    const changedLines = lines.map(v => v === 6 ? 7 : (v === 9 ? 8 : v));
+    const hasChange = lines.some(v => v === 6 || v === 9);
+    hexHTML = `
+      <div class="lines-container">
+        <div>
+          <div style="text-align:center; font-size:0.8rem; margin-bottom:10px;">本卦</div>
+          <div class="hexagram">${renderHexagram(lines, false)}</div>
+        </div>
+        ${hasChange ? `
+        <div>
+          <div style="text-align:center; font-size:0.8rem; margin-bottom:10px; color:var(--acc);">变卦</div>
+          <div class="hexagram">${renderHexagram(changedLines, true)}</div>
+        </div>
+        ` : `<div style="display:flex; align-items:center; color:var(--dim); font-size:0.8rem;">无动爻</div>`}
       </div>
-      <div class="book-cover" id="book-cover-el">
-        <div class="cover-title">答案之书</div>
+      <button class="btn btn-fill" onclick="saveIChing()" style="width:100%; margin-bottom:10px;">保存此卦</button>
+      <button class="btn btn-ghost" onclick="resetIChing()" style="width:100%;">重新起卦</button>
+    `;
+  } else {
+    hexHTML = `
+      <div class="lines-container">
+        <div class="hexagram">
+          ${Array(6 - lines.length).fill('<div class="line" style="background:var(--line);"></div>').join('')}
+          ${renderHexagram(lines, false)}
+        </div>
+      </div>
+      <div class="coin-container" id="coins">
+        <div class="coin"></div><div class="coin"></div><div class="coin"></div>
+      </div>
+      <button class="btn btn-fill" id="toss-btn" onclick="tossCoins()" style="width:100%;">
+        ${lines.length === 0 ? '开始摇卦 (第1爻)' : `摇 第${lines.length + 1}爻`}
+      </button>
+    `;
+  }
+
+  return `
+    <h2 style="margin-bottom: 20px;">金钱卦排盘</h2>
+    <input type="text" id="gua-q" class="input-box" placeholder="所问何事？（起卦前默念输入）" value="${question}" ${lines.length > 0 ? 'disabled' : ''} onchange="S.iching.question = this.value">
+    <div class="gua-box">${hexHTML}</div>
+  `;
+}
+
+function tossCoins() {
+  const btn = document.getElementById('toss-btn');
+  const qInput = document.getElementById('gua-q');
+  if(!qInput.value && S.iching.lines.length === 0) {
+    alert("请先输入所问之事。"); return;
+  }
+  S.iching.question = qInput.value;
+  btn.disabled = true;
+  
+  // 触发硬币动画
+  const coins = document.querySelectorAll('.coin');
+  coins.forEach(c => { c.classList.remove('flip'); void c.offsetWidth; c.classList.add('flip'); });
+  
+  setTimeout(() => {
+    // 随机生成 3 枚硬币的正反 (0或1)
+    const toss = [Math.round(Math.random()), Math.round(Math.random()), Math.round(Math.random())];
+    const sum = toss.reduce((a, b) => a + b, 0); 
+    // 古法映射（简易版）：0反=9(老阳), 1反=8(少阴), 2反=7(少阳), 3反=6(老阴)
+    const val = sum === 0 ? 9 : (sum === 1 ? 8 : (sum === 2 ? 7 : 6));
+    S.iching.lines.push(val);
+    render();
+  }, 700);
+}
+
+function saveIChing() {
+  S.records.unshift({
+    id: Date.now(),
+    type: '金钱卦',
+    date: new Date().toLocaleString(),
+    question: S.iching.question,
+    data: S.iching.lines.join(',')
+  });
+  saveRecords();
+  alert("卦象已保存！可前往记录查看。");
+}
+
+function resetIChing() {
+  S.iching = { lines: [], question: '' }; render();
+}
+
+// --- 答案之书模块 ---
+function renderBook() {
+  return `
+    <h2 style="margin-bottom: 20px;">答案之书</h2>
+    <p style="color: var(--dim); margin-bottom: 30px; line-height: 1.6;">
+      在心中默念你纠结的问题。<br>当你准备好时，点击下方按钮翻开书本。
+    </p>
+    <button class="btn btn-fill" onclick="openBookModal()" style="width:100%;">翻开这本书</button>
+  `;
+}
+
+function openBookModal() {
+  const answer = S.bookAnswers[Math.floor(Math.random() * S.bookAnswers.length)];
+  const modal = document.createElement('div');
+  modal.id = 'book-modal';
+  modal.innerHTML = `
+    <div id="countdown-text">深呼吸，然后倒数 3</div>
+    <div class="book-wrapper">
+      <div class="book-page">
+        <h3 style="margin-bottom:15px; color:#8b6f47;">指引</h3>
+        <p style="line-height:1.8; font-size:0.95rem;">${answer}</p>
+      </div>
+      <div class="book-cover" id="the-cover">
+        <div class="book-cover-text">答案之书</div>
       </div>
     </div>
-    <button id="btn-book-x" style="margin-top:40px;background:none;border:none;color:white;opacity:0;transition:opacity 1s">关闭</button>
+    <button class="close-book" id="close-book-btn" onclick="closeBookModal()">合上书本</button>
   `;
-  document.body.appendChild(ov);
+  document.body.appendChild(modal);
 
-  // 倒数逻辑
   let count = 3;
-  const msgEl = document.getElementById('book-msg');
+  const textEl = document.getElementById('countdown-text');
   const timer = setInterval(() => {
     count--;
-    if(count > 0) {
-      msgEl.innerText = `深呼吸，然后倒数 ${count}...`;
+    if (count > 0) {
+      textEl.innerText = `深呼吸，然后倒数 ${count}`;
     } else {
       clearInterval(timer);
-      msgEl.innerText = ""; // 清空提示
-      // 触发翻页动画
-      document.getElementById('book-cover-el').classList.add('open');
-      document.getElementById('btn-book-x').style.opacity = '1';
+      textEl.innerText = "";
+      document.getElementById('the-cover').classList.add('open');
+      document.getElementById('close-book-btn').style.opacity = '1';
+      
+      // 自动保存记录
+      S.records.unshift({ id: Date.now(), type: '答案之书', date: new Date().toLocaleString(), question: '无声的默念', data: answer });
+      saveRecords();
     }
   }, 1000);
-
-  document.getElementById('btn-book-x').onclick = () => { ov.remove(); };
 }
 
-// ──────────────── 金钱卦渲染与逻辑 ────────────────
-const HEX_NAMES = ["坤为地","山地剥","水地比","风地观","雷地豫","火地晋","泽地萃","天地否","地山谦","艮为山","水山蹇","风山渐","雷山小过","火山旅","泽山咸","天山遁","地水师","山水蒙","坎为水","风水涣","雷水解","火水未济","泽水困","天水讼","地风升","山风蛊","水风井","巽为风","雷风恒","火风鼎","泽风大过","天风姤","地雷复","山雷颐","水雷屯","风雷益","震为雷","火雷噬嗑","泽雷随","天雷无妄","地火明夷","山火贲","水火既济","风火家人","雷火丰","离为火","泽火革","天火同人","地泽临","山泽损","水泽节","风泽中孚","雷泽归妹","火泽睽","兑为泽","天泽履","地天泰","山天大畜","水天需","风天小畜","雷天大壮","火天大有","泽天夬","乾为天"];
-function getHexName(lines) {
-  let idx = 0;
-  for(let i=0; i<6; i++) { if(lines[i]===7 || lines[i]===9) idx |= (1 << i); }
-  return HEX_NAMES[idx] || "未知";
+function closeBookModal() {
+  document.getElementById('book-modal').remove();
 }
 
-function renderIChing() {
-  const lines = S.ichingLines;
-  const tc = lines.length;
-
-  const drawGua = (vals, isChg=false) => vals.slice().reverse().map((val) => {
-    const isYang = isChg ? (val===6||val===7) : (val===7||val===9);
-    const isMov = !isChg && (val===6||val===9);
-    return `<div class="gua-line">${isYang?'<div class="line-solid"></div>':'<div class="line-broken"></div>'}${isMov?`<div class="line-moving">${val===9?'○':'×'}</div>`:''}</div>`;
-  }).join('');
-
-  let body = '';
-  if (tc < 6) {
-    const empty = 6 - tc;
-    body = `
-      <textarea id="gua-q-inp" class="input-box" placeholder="古人云：无事不占。请在此输入你心中所求之事..." rows="2" ${tc>0?'disabled':''}>${S.guaQ}</textarea>
-      <div style="text-align:center;color:var(--dim);font-size:.75rem;margin-bottom:15px">六爻排盘</div>
-      <div class="gua-wrap"><div class="gua-col">
-        ${Array(empty).fill(`<div class="gua-line"><div class="line-solid" style="opacity:0.1"></div></div>`).join('')}${drawGua(lines)}
-      </div></div>
-      <div class="coin-box">
-         <div class="coin"><span class="coin-text-top">通</span><span class="coin-text-bot">宝</span></div>
-         <div class="coin"><span class="coin-text-top">通</span><span class="coin-text-bot">宝</span></div>
-         <div class="coin"><span class="coin-text-top">通</span><span class="coin-text-bot">宝</span></div>
+// --- 记录模块 ---
+function renderRecords() {
+  if (S.records.length === 0) return `<h2 style="margin-bottom: 20px;">记录</h2><p style="color:var(--dim);">空空如也，快去占卜吧。</p>`;
+  
+  const list = S.records.map(r => `
+    <div class="rec-card">
+      <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+        <span class="rec-title">[${r.type}]</span>
+        <button class="btn-ghost" style="padding:2px 8px; font-size:0.7rem; border-radius:4px;" onclick="deleteRec(${r.id})">删除</button>
       </div>
-      <div style="text-align:center"><button class="btn btn-fill" id="btn-toss">掷第 ${tc+1} 爻</button></div>
-    `;
-  } else {
-    const orig = drawGua(lines, false);
-    const chgL = lines.map(v=>v===6?7:v===9?8:v);
-    const chg = drawGua(chgL, true);
-    const hasM = lines.includes(6) || lines.includes(9);
-    body = `
-      ${S.guaQ ? `<div class="rec-q">占问：${S.guaQ}</div>` : ''}
-      <div class="gua-wrap">
-        <div><div class="gua-title">本卦<br>${getHexName(lines)}</div><div class="gua-col">${orig}</div></div>
-        ${hasM ? `<div><div class="gua-title">变卦<br>${getHexName(chgL)}</div><div class="gua-col">${chg}</div></div>` : `<div style="padding:15px;color:var(--dim);font-size:.7rem;display:flex;align-items:center">无动爻<br>守本卦</div>`}
-      </div>
-      <div style="text-align:center;margin-top:20px">
-        <button class="btn btn-fill" id="btn-gua-save">保存记录</button>
-        <button class="btn btn-ghost" id="btn-gua-reset" style="margin-left:10px">重新起卦</button>
-      </div>
-    `;
-  }
-  return `<div class="nav-row"><button class="back-btn" id="btn-back">← 返回</button><span style="color:var(--line)">·</span><span style="font-size:.82rem;color:var(--mid)">金钱卦</span></div><div class="fu">${body}</div>`;
+      <div class="rec-date">${r.date}</div>
+      <div style="font-size:0.85rem; margin-bottom:8px;"><strong>问：</strong>${r.question || '未记录'}</div>
+      <div style="font-size:0.85rem; color:var(--dim);"><strong>果：</strong>${r.type === '金钱卦' ? '六爻排盘 (' + r.data + ')' : r.data}</div>
+    </div>
+  `).join('');
+  
+  return `<h2 style="margin-bottom: 20px;">占卜记录</h2>${list}`;
 }
 
-function renderRecs(){
-  const rs=[...S.records].reverse();
-  return `<div class="nav-row"><button class="back-btn" id="btn-back">← 返回</button><span style="color:var(--line)">·</span><span style="font-size:.82rem;color:var(--mid)">记录</span></div>
-  <div class="fu">${!rs.length?`<div style="text-align:center;color:var(--dim);padding:40px 0">暂无记录</div>`:rs.map(r=>`
-    <div class="rec-card"><div class="rec-head"><div><div class="rec-title">${r.type} ${r.title||''}</div><div class="rec-date">${new Date(r.date).toLocaleDateString()}</div></div><button class="rec-btn" data-del="${r.id}">删除</button></div>
-    ${r.q?`<div class="rec-q">${r.q}</div>`:''}</div>`).join('')}</div>`;
+function deleteRec(id) {
+  S.records = S.records.filter(r => r.id !== id);
+  saveRecords(); render();
 }
 
-// ═══════════════════════════════════════ 事件绑定 ═══════════════════════════════════════
-function bindMain(){
-  document.querySelectorAll('[data-nav]').forEach(el=>el.addEventListener('click',()=>{ S.screen=el.dataset.nav; render(); }));
-  document.getElementById('btn-back')?.addEventListener('click',()=>{ S.screen='home'; S.drawn=[]; S.ichingLines=[]; S.guaQ=''; render(); });
-  document.getElementById('btn-theme')?.addEventListener('click',()=>{ S.theme=S.theme==='light'?'dark':'light'; render(); });
-
-  // 塔罗
-  document.getElementById('btn-t-draw')?.addEventListener('click',()=>{
-    S.q = document.getElementById('t-q-inp')?.value||'';
-    S.drawn = shuffle(MAJOR_WAITE).slice(0,3).map(c=>({card:c,rev:Math.random()>.5})); render();
-  });
-  document.getElementById('btn-t-save')?.addEventListener('click',()=>{
-    S.records.push({id:Date.now(),date:Date.now(),type:'[塔罗]',title:'时间之流',q:S.q}); saveSt();
-    document.getElementById('btn-t-save').textContent='已保存'; document.getElementById('btn-t-save').disabled=true;
-  });
-
-  // 答案之书
-  document.getElementById('btn-open-book')?.addEventListener('click',()=>{ triggerBookAnim(); });
-
-  // 金钱卦
-  document.getElementById('gua-q-inp')?.addEventListener('input',(e)=>{ S.guaQ=e.target.value; });
-  document.getElementById('btn-toss')?.addEventListener('click', () => {
-    document.getElementById('btn-toss').disabled = true;
-    const coins = document.querySelectorAll('.coin');
-    coins.forEach(c => { c.classList.remove('tossing'); void c.offsetWidth; c.classList.add('tossing'); });
-    setTimeout(() => {
-      let heads = 0; for(let i=0;i<3;i++) if(Math.random()>0.5) heads++;
-      let val = 6; if(heads===3) val=9; else if(heads===2) val=8; else if(heads===1) val=7;
-      S.ichingLines.push(val); render();
-    }, 700);
-  });
-  document.getElementById('btn-gua-reset')?.addEventListener('click',()=>{ S.ichingLines=[]; S.guaQ=''; render(); });
-  document.getElementById('btn-gua-save')?.addEventListener('click',()=>{
-    const m = getHexName(S.ichingLines);
-    S.records.push({id:Date.now(),date:Date.now(),type:'[金钱卦]',title:m,q:S.guaQ}); saveSt();
-    document.getElementById('btn-gua-save').textContent='已保存'; document.getElementById('btn-gua-save').disabled=true;
-  });
-
-  // 记录
-  document.querySelectorAll('[data-del]').forEach(el=>{
-    el.addEventListener('click',()=>{ S.records=S.records.filter(r=>r.id!==parseInt(el.dataset.del));saveSt();render(); });
-  });
-}
+// --- 初始化 ---
 render();
 </script>
 </body>
