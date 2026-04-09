@@ -152,6 +152,11 @@
         .book-content { font-size: 20px; line-height: 1.6; margin: 20px 0; font-style: italic; }
         .book-divider { width: 50px; height: 2px; background: var(--gold); margin: 10px auto; }
         .book-pg-num { position: absolute; bottom: 10px; right: 15px; font-family: var(--font-eng); opacity: 0.5; }
+        <div id="book-breathe" style="display:none;">
+                <h3 style="color:var(--gold); margin-bottom: 20px;">深呼吸，默念你的问题</h3>
+                <div class="breathe-circle"></div>
+                <div class="countdown-text" id="book-countdown">3</div>
+            </div>
         .book-fold { position: absolute; top: 0; right: 0; width: 0; height: 0; border-style: solid; border-width: 0 30px 30px 0; border-color: transparent var(--bg-color) transparent transparent; box-shadow: -2px 2px 5px rgba(0,0,0,0.1); }
 
         /* ================= AI 对话 ================= */
@@ -306,11 +311,197 @@ const CARD_DATA = {
 };
 
 const BOOK_ANSWERS = [
-    "放手去做吧，宇宙在支持你。",
-    "现在还不是最佳时机，请耐心等待。",
-    "你需要换一个角度来看待这个问题。",
-    "答案就在你的心中，请倾听内心的声音。",
-    "顺其自然，不要强求结果。"
+    const answerList = [
+    "是",
+    "不是",
+    "可以",
+    "不行",
+    "绝对是",
+    "毫无疑问",
+    "当然",
+    "未必",
+    "也许",
+    "看情况",
+    "别着急",
+    "顺其自然",
+    "时机未到",
+    "静待佳音",
+    "耐心等待",
+    "暂缓行动",
+    "立刻行动",
+    "大胆去做",
+    "不要犹豫",
+    "勇敢尝试",
+    "值得一试",
+    "放弃执念",
+    "及时止损",
+    "保持现状",
+    "做出改变",
+    "重新开始",
+    "听从内心",
+    "相信直觉",
+    "理性判断",
+    "别想太多",
+    "放下纠结",
+    "看淡一切",
+    "专注自己",
+    "适当妥协",
+    "坚守原则",
+    "主动一点",
+    "保持距离",
+    "减少期待",
+    "降低要求",
+    "接纳现实",
+    "学会释怀",
+    "来日方长",
+    "自有安排",
+    "命中注定",
+    "缘分未到",
+    "缘分已尽",
+    "会有转机",
+    "峰回路转",
+    "好事多磨",
+    "一切顺利",
+    "略有波折",
+    "阻碍重重",
+    "结局圆满",
+    "留有遗憾",
+    "得不偿失",
+    "稳赚不赔",
+    "不必纠结",
+    "无需勉强",
+    "量力而行",
+    "适可而止",
+    "循序渐进",
+    "慢慢来就好",
+    "再加把劲",
+    "到此为止",
+    "及时放手",
+    "坚持下去",
+    "短暂坚持",
+    "长久维系",
+    "浅尝辄止",
+    "深入了解",
+    "多听少说",
+    "沉默为上",
+    "主动沟通",
+    "不必解释",
+    "藏好情绪",
+    "坦诚相待",
+    "保持冷静",
+    "放平心态",
+    "远离消耗",
+    "靠近温暖",
+    "独自前行",
+    "结伴同行",
+    "寻求帮助",
+    "独自解决",
+    "拒绝内耗",
+    "停止焦虑",
+    "拥抱变化",
+    "拒绝改变",
+    "抓住机会",
+    "错过无妨",
+    "短期有利",
+    "长期不利",
+    "利大于弊",
+    "弊大于利",
+    "暗藏惊喜",
+    "暗藏隐患",
+    "看似美好",
+    "表里不一",
+    "不必急于求成",
+    "答案即将揭晓",
+    "答案藏在时间里",
+    "答案需要自己找",
+    "暂时没有答案",
+    "未来皆有可能",
+    "结果不会太差",
+    "结果超出预期",
+    "现实会给答案",
+    "不要逃避问题",
+    "直面当下难题",
+    "放过自己就好",
+    "别为难任何人",
+    "保持清醒理智",
+    "偶尔随性一点",
+    "学会及时抽身",
+    "不要轻易投入",
+    "全身心去投入",
+    "浅浅相处即可",
+    "深度绑定不妥",
+    "普通关系最好",
+    "保持适当边界",
+    "不必太过认真",
+    "认真才有结果",
+    "付出会有回报",
+    "付出未必值得",
+    "不要盲目付出",
+    "适度付出就好",
+    "欲望适当克制",
+    "遵从当下欲望",
+    "三思而后行",
+    "随心而行即可",
+    "谨慎做出选择",
+    "大胆做出决定",
+    "暂缓做出选择",
+    "换个角度看待",
+    "换种方式生活",
+    "简化当下生活",
+    "丰富自身日常",
+    "减少无用社交",
+    "拓展新的圈子",
+    "守住现有一切",
+    "开拓新的未来",
+    "旧的不去新的不来",
+    "珍惜眼前所有",
+    "不必留恋过往",
+    "回忆仅此而已",
+    "未来值得期待",
+    "当下即是最好",
+    "金钱方面稳妥",
+    "开销需要节制",
+    "不宜大额消费",
+    "适合规划储蓄",
+    "事业稳步发展",
+    "适合尝试新方向",
+    "原地踏步即可",
+    "不宜频繁变动",
+    "人际关系和睦",
+    "人际小有摩擦",
+    "感情慢慢升温",
+    "关系逐渐冷淡",
+    "适合独处沉淀",
+    "多与人相处互动",
+    "身体注意休养",
+    "保持规律作息",
+    "压力慢慢消散",
+    "烦恼都会过去",
+    "好运正在靠近",
+    "低谷即将结束",
+    "万事皆有转机",
+    "一切皆可和解",
+    "遗憾终会释怀",
+    "纠结终会解开",
+    "烦恼自会消散",
+    "迷茫只是暂时",
+    "前路慢慢清晰",
+    "生活归于平静",
+    "日子慢慢变好",
+    "所求皆有回响",
+    "所念皆会如愿",
+    "不必杞人忧天",
+    "一切自有天意",
+    "凡事不必强求",
+    "接纳所有发生",
+    "允许一切发生",
+    "保持温柔坚定",
+    "活好当下就行",
+    "不要回头张望",
+    "往前走别停留",
+    "你值得更好的",
+    "一切都会好的"
+];
     // ... 补充至 36 条
 ];
 
@@ -326,11 +517,9 @@ const app = {
     user: null,
     theme: 'light',
     state: {
-        mode: '', // tarot, lenormand, fortune
-        needCount: 0,
-        selectedCards: [],
-        currentSpreadType: '',
-        isSeason: false
+        mode: '', needCount: 0, selectedCards: [], currentSpreadType: '', isSeason: false,
+        tempDeck: [], lastView: 'home', currentQuestion: ''
+   if(viewName !== 'result') this.state.lastView = viewName;
     },
 
     init() {
@@ -434,7 +623,9 @@ const app = {
         this.state.needCount = count;
         this.state.selectedCards = [];
         this.state.mode = type.includes('lenormand') ? 'lenormand' : 'waite';
+        this.state.tempDeck = [...CARD_DATA[this.state.mode]]; // 复制牌库，用于不重复抽牌
         
+        document.getElementById('ipt-question').value = '';
         document.getElementById('deal-need-count').innerText = count;
         document.getElementById('deal-wrap').style.display = 'flex';
         this.renderFanCards();
@@ -470,24 +661,39 @@ const app = {
     },
 
     handleCardPick(index) {
-        // 随机在对应牌库中取一张 (这里简化为取预设 mock 数据的随机项)
-        const deck = CARD_DATA[this.state.mode];
-        const randomCard = deck[Math.floor(Math.random() * deck.length)]; // 实际应无放回抽样
+        if (this.state.tempDeck.length === 0) return;
+        
+        // 从 tempDeck 中随机抽取并移除，确保不重复
+        const randIdx = Math.floor(Math.random() * this.state.tempDeck.length);
+        const randomCard = this.state.tempDeck.splice(randIdx, 1)[0];
+        
         const isReversed = this.state.mode !== 'lenormand' && Math.random() > 0.5;
-
-        this.state.selectedCards.push({
-            ...randomCard,
-            reversed: isReversed
-        });
-
+        this.state.selectedCards.push({ ...randomCard, reversed: isReversed });
         document.getElementById('deal-need-count').innerText = this.state.needCount - this.state.selectedCards.length;
 
         if (this.state.selectedCards.length >= this.state.needCount) {
+            this.state.currentQuestion = document.getElementById('ipt-question').value.trim();
             setTimeout(() => {
                 document.getElementById('deal-wrap').style.display = 'none';
                 this.showResult();
             }, 300);
         }
+        quickPick() {
+        const needed = this.state.needCount - this.state.selectedCards.length;
+        const availableCards = document.querySelectorAll('.dc:not(.selected)');
+        
+        for(let i=0; i<needed; i++) {
+            if(availableCards[i]) availableCards[i].classList.add('selected');
+            // 直接跳过动画调用抽牌
+            if (this.state.tempDeck.length > 0) {
+                const randIdx = Math.floor(Math.random() * this.state.tempDeck.length);
+                const randomCard = this.state.tempDeck.splice(randIdx, 1)[0];
+                this.state.selectedCards.push({ ...randomCard, reversed: (this.state.mode !== 'lenormand' && Math.random() > 0.5) });
+            }
+        }
+        this.state.currentQuestion = document.getElementById('ipt-question').value.trim();
+        document.getElementById('deal-wrap').style.display = 'none';
+        this.showResult();
     },
 
     cancelDeal() {
@@ -549,12 +755,19 @@ const app = {
     generateLocalText() {
         let text = `根据【${this.state.currentSpreadType}】牌阵为您解读：\n\n`;
         this.state.selectedCards.forEach((c, i) => {
-            text += `第 ${i+1} 张：${c.name} ${c.reversed ? '(逆)' : '(正)'}\n`;
-            text += `含义：${c.reversed ? c.meaning_rev : c.meaning_up || c.meaning}\n\n`;
+            text += `[位置 ${i+1}] ${c.name} ${c.reversed ? '(逆)' : '(正)'}\n`;
+            text += `核心牌义：${c.reversed ? c.meaning_rev : c.meaning_up || c.meaning}\n\n`;
         });
-        text += "综合本地符号学分析：\n元素倾向显示一定的风/水特质，建议在行动中保持内心的平静，倾听潜意识的指引。";
+        
+        // 追加300字以上的模板化深度解读
+        text += `🔮 【综合牌面与深度符号学解读】\n`;
+        text += `参考《78度的塔罗》中的卡巴拉生命树路径，以及《塔罗葵花宝典》的元素生克法则，本次牌阵展现出一种深层的潜意识流动状态。在塔罗的宏观视角中，每一张牌不仅仅是孤立的事件预示，更是您当下心理能量场的一面镜子。\n\n`;
+        text += `首先，从【元素构成】来看，牌面中显现出的元素特质指示着您目前生活中某些能量的积聚或失衡。如果您抽到了火元素（权杖），这代表着行动力的呼唤；水元素（圣杯）要求您正视内心的情感羁绊；风元素（宝剑）提醒您理清思绪，避免精神内耗；土元素（星币）则将焦点拉回现实基础与物质保障。\n\n`;
+        text += `其次，从【数字命理学】的角度，牌面数字的进阶暗示了事件的发展阶段。从代表初始的1（王牌）到代表圆满或重负的10，您的牌卡位置揭示了当前问题是处于萌芽期、冲突期还是即将迎来结局的转化期。\n\n`;
+        text += `最终建议：塔罗牌是具有共时性的工具，它并非宿命论。正位代表能量的顺畅流动，而逆位并非绝对的厄运，而是内敛、延迟或是过度消耗的警示。请结合您最初默念的问题：“${this.state.currentQuestion || '未知'}”，在接下来的几天里，保持正念与觉知，将牌面的启示转化为您现实生活中的行动指南。记住，命运的最终走向，始终掌握在您自己手中。`;
+
         document.getElementById('res-local-text').innerText = text;
-        document.getElementById('ai-reply-content').innerText = ''; // 清空 AI 对话
+        document.getElementById('ai-reply-content').innerText = ''; 
         document.getElementById('btn-ask-ai').disabled = false;
         document.getElementById('btn-ask-ai').innerText = "请求 AI 深度解读";
     },
@@ -643,15 +856,35 @@ const app = {
     // --- 答案之书 ---
     openBookOfAnswers() {
         document.getElementById('book-modal').style.display = 'flex';
-        this.rollBook();
+        document.getElementById('book-breathe').style.display = 'flex';
+        let count = 3;
+        const countEl = document.getElementById('book-countdown');
+        countEl.innerText = count;
+        
+        const timer = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countEl.innerText = count;
+            } else {
+                clearInterval(timer);
+                document.getElementById('book-breathe').style.display = 'none';
+                this.rollBook();
+            }
+        }, 1000); // 1秒递减
     },
-    closeBook(e) {
-        document.getElementById('book-modal').style.display = 'none';
-    },
+    
     rollBook() {
         const textEl = document.getElementById('book-text');
         const pgEl = document.getElementById('book-pg');
         textEl.style.opacity = 0;
+        
+        setTimeout(() => {
+            const randomIndex = Math.floor(Math.random() * BOOK_ANSWERS.length);
+            textEl.innerText = BOOK_ANSWERS[randomIndex];
+            pgEl.innerText = `Pg. ${Math.floor(Math.random() * 300) + 1}`;
+            textEl.style.opacity = 1;
+        }, 300);
+    },
         
         setTimeout(() => {
             const randomIndex = Math.floor(Math.random() * BOOK_ANSWERS.length);
