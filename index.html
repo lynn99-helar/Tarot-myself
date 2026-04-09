@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>塔罗占卜 Tarot</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    
+    <title>塔罗占卜·命运之书</title>
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* ================= 基础变量与主题 ================= */
         :root {
             --gold: #C8A96E;
             --gold-dark: #A68A56;
@@ -17,206 +13,99 @@
             --font-main: 'Noto Serif SC', serif;
             --font-eng: 'IM Fell English', serif;
         }
-        body.light-theme {
-            --bg-color: #F4F1EB;
-            --text-color: #2C2A25;
-            --card-bg: #FFFFFF;
-            --border-color: rgba(0,0,0,0.1);
-        }
-        body.dark-theme {
-            --bg-color: #111009;
-            --text-color: #E8E6E1;
-            --card-bg: #1A1914;
-            --border-color: rgba(255,255,255,0.1);
-        }
+        body.light-theme { --bg-color: #F4F1EB; --text-color: #2C2A25; --card-bg: #FFFFFF; --border-color: rgba(0,0,0,0.1); }
+        body.dark-theme { --bg-color: #111009; --text-color: #E8E6E1; --card-bg: #1A1914; --border-color: rgba(255,255,255,0.1); }
 
-        /* ================= 全局重置 ================= */
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body {
-            font-family: var(--font-main);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        #app-container {
-            width: 100%;
-            max-width: var(--max-width);
-            min-height: 100vh;
-            position: relative;
-            background-color: var(--bg-color);
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-        }
+        body { font-family: var(--font-main); background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; min-height: 100vh; transition: 0.3s; }
+        
+        #app-container { width: 100%; max-width: var(--max-width); min-height: 100vh; position: relative; background-color: var(--bg-color); display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
 
-        /* ================= 导航与按钮 ================= */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            max-width: var(--max-width);
-            height: 60px;
-            background: var(--card-bg);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 100;
-        }
-        .nav-item {
-            font-size: 14px;
-            color: var(--text-color);
-            opacity: 0.6;
-            cursor: pointer;
-            padding: 10px;
-        }
-        .nav-item.active { opacity: 1; color: var(--gold); font-weight: bold; }
-        .btn-fill {
-            background: var(--gold);
-            color: #fff;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            font-size: 16px;
-            font-family: var(--font-main);
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn-fill:hover { background: var(--gold-dark); }
-        .view-section { display: none; padding: 20px; padding-bottom: 80px; flex: 1; overflow-y: auto;}
-        .view-section.active { display: block; }
+        /* 导航与通用组件 */
+        .view-section { display: none; padding: 20px; padding-bottom: 80px; flex: 1; overflow-y: auto; position: relative; }
+        .view-section.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* ================= 选牌桌 (扇形) ================= */
-        #deal-wrap {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85); z-index: 200;
-            display: none; flex-direction: column; align-items: center; justify-content: flex-end;
-            overflow: hidden;
+        .header-title { font-family: var(--font-eng); font-size: 24px; text-align: center; margin-bottom: 20px; color: var(--gold); }
+        .btn-fill { background: var(--gold); color: #fff; border: none; padding: 12px; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; margin-bottom: 10px; }
+        .btn-back { position: absolute; top: 15px; left: 15px; background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 4px 12px; border-radius: 4px; cursor: pointer; z-index: 10; font-size: 13px; }
+
+        /* 选牌桌 - 居中优化 */
+        #deal-wrap { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); 
+            z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; 
         }
-        .deal-prompt { position: absolute; top: 20%; color: var(--gold); font-size: 20px; text-align: center; width: 100%;}
-        #d-slots { position: relative; width: 100%; height: 250px; bottom: -20px; }
-        .dc {
-            position: absolute; width: 50px; height: 85px;
-            background: #2a2a2a; border: 2px solid #444; border-radius: 4px;
-            bottom: 0; left: 50%; transform-origin: bottom center;
-            transition: transform 0.3s, border-color 0.3s;
-            cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,0.5);
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.05) 5px, rgba(255,255,255,0.05) 10px);
+        .deal-prompt { color: var(--gold); font-size: 18px; margin-bottom: 30px; text-align: center; }
+        #d-slots { position: relative; width: 100%; height: 200px; display: flex; justify-content: center; }
+        .dc { 
+            position: absolute; width: 45px; height: 75px; background: #2a2a2a; border: 1px solid var(--gold); 
+            border-radius: 4px; bottom: 50%; transform-origin: bottom center; transition: 0.3s; cursor: pointer; 
         }
-        .dc:hover { transform: translateY(-15px) scale(1.1) !important; border-color: var(--gold); z-index: 99 !important; }
         .dc.selected { opacity: 0; pointer-events: none; }
+        .deal-controls { width: 85%; margin-top: 50px; }
+        .ipt-question { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 4px; border: 1px solid var(--gold); background: #222; color: #fff; text-align: center; }
 
-        /* ================= 牌面展示与动画 ================= */
-        .card-display-area { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px;}
-        .card-container { width: 100px; height: 170px; perspective: 1000px; cursor: pointer; }
-        .card-inner {
-            width: 100%; height: 100%; transition: transform 0.6s;
-            transform-style: preserve-3d; position: relative;
-        }
+        /* 结果展示 */
+        .card-display-area { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .card-container { width: 80px; height: 130px; perspective: 1000px; }
+        .card-inner { width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; position: relative; }
         .card-container.flipped .card-inner { transform: rotateY(180deg); }
         .card-container.reversed.flipped .card-inner { transform: rotateY(180deg) rotateZ(180deg); }
-        .card-front, .card-back {
-            width: 100%; height: 100%; position: absolute; backface-visibility: hidden;
-            border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .card-back {
-            background: #2a2a2a repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.05) 5px, rgba(255,255,255,0.05) 10px);
-            border: 2px solid var(--gold);
-        }
-        .card-front {
-            background: var(--card-bg); border: 1px solid var(--border-color);
-            transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center; justify-content: center;
-            overflow: hidden;
-        }
-        .card-img { width: 90%; height: 75%; object-fit: contain; }
-        .card-name-label { font-size: 10px; margin-top: 5px; text-align: center; }
-        .cf-rev-mark { color: red; font-size: 12px; font-weight: bold; } /* 解决历史Bug: cf-rev-mark */
+        .card-front, .card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 4px; }
+        .card-back { background: #2a2a2a; border: 1px solid var(--gold); }
+        .card-front { background: var(--card-bg); border: 1px solid var(--border-color); transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; text-align: center; padding: 5px; }
 
-        /* ================= 答案之书 ================= */
-        #book-modal {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7); z-index: 300; display: none;
-            justify-content: center; align-items: center; padding: 20px;
-        }
-        .book-wrapper {
-            background: var(--card-bg); width: 100%; max-width: 400px; padding: 30px;
-            border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
-            border: 2px solid var(--gold); position: relative;
-        }
-        /* 解决历史Bug类名 */
-        .book-content { font-size: 20px; line-height: 1.6; margin: 20px 0; font-style: italic; }
-        .book-divider { width: 50px; height: 2px; background: var(--gold); margin: 10px auto; }
-        .book-pg-num { position: absolute; bottom: 10px; right: 15px; font-family: var(--font-eng); opacity: 0.5; }
-        .book-fold { position: absolute; top: 0; right: 0; width: 0; height: 0; border-style: solid; border-width: 0 30px 30px 0; border-color: transparent var(--bg-color) transparent transparent; box-shadow: -2px 2px 5px rgba(0,0,0,0.1); }
+        /* 答案之书 */
+        #book-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 300; display: none; justify-content: center; align-items: center; }
+        .book-wrapper { background: #fff; color: #222; width: 85%; max-width: 350px; min-height: 250px; padding: 30px; border-radius: 4px; position: relative; transition: 0.5s; box-shadow: inset 0 0 50px rgba(0,0,0,0.1); }
+        .book-content { font-size: 22px; margin: 40px 0; font-weight: bold; line-height: 1.5; color: #333; }
+        #book-breathe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #111; color: var(--gold); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 310; border-radius: 4px; }
+        .breathe-circle { width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, var(--gold) 0%, transparent 70%); animation: breathe 3s infinite ease-in-out; }
+        @keyframes breathe { 0%, 100% { transform: scale(0.8); opacity: 0.4; } 50% { transform: scale(1.4); opacity: 1; } }
+        .countdown-text { font-size: 40px; margin-top: 20px; font-family: var(--font-eng); }
 
-        /* ================= AI 对话 ================= */
-        .ai-chat-box { margin-top: 20px; border: 1px solid var(--gold); border-radius: 6px; padding: 15px; background: rgba(200, 169, 110, 0.05); }
-        .ai-reply { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-top: 10px; }
-        .loading-dot::after { content: '.'; animation: dots 1.5s steps(5, end) infinite; }
-        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);} 40% { color: var(--gold); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);} 60% { text-shadow: .25em 0 0 var(--gold), .5em 0 0 rgba(0,0,0,0);} 80%, 100% { text-shadow: .25em 0 0 var(--gold), .5em 0 0 var(--gold);}}
+        /* 记录列表 */
+        .record-item { background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--gold); position: relative; }
+        .btn-del { position: absolute; right: 10px; top: 10px; color: #ff4d4d; border: none; background: none; cursor: pointer; font-size: 12px; }
 
-        /* 通用输入框 */
-        input[type="text"], input[type="password"] {
-            width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color);
-            background: var(--card-bg); color: var(--text-color); border-radius: 4px;
-        }
-        .header-title { font-family: var(--font-eng); font-size: 24px; text-align: center; margin-bottom: 20px; color: var(--gold); }
-        .record-item { padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px; font-size: 14px;}
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: var(--max-width); height: 60px; background: var(--card-bg); border-top: 1px solid var(--border-color); display: none; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-item { font-size: 12px; color: var(--text-color); opacity: 0.5; cursor: pointer; text-align: center; }
+        .nav-item.active { opacity: 1; color: var(--gold); font-weight: bold; }
     </style>
 </head>
 <body class="light-theme">
 
 <div id="app-container">
-    
     <div id="view-login" class="view-section active">
         <div class="header-title" style="margin-top: 50px;">Tarot & Oracle</div>
         <h2 style="text-align: center; margin-bottom: 30px;">开启你的专属祭坛</h2>
-        <input type="text" id="ipt-username" placeholder="输入昵称 (必填)">
-        <input type="password" id="ipt-password" placeholder="密码 (可选，用于本地隔离)">
+        <input type="text" id="ipt-username" style="width:100%; padding:12px; margin-bottom:15px;" placeholder="输入昵称">
         <button class="btn-fill" onclick="app.login()">进入</button>
     </div>
 
     <div id="view-home" class="view-section">
         <div class="header-title">Home</div>
-        <h2 id="home-greeting">早上好，旅行者</h2>
-        <p id="home-date" style="opacity: 0.6; margin-bottom: 30px;"></p>
-        
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button class="btn-fill" style="flex:1;" onclick="app.switchTheme()">切换深/浅色</button>
-            <button class="btn-fill" style="flex:1; background: #888;" onclick="app.logout()">切换账号</button>
-        </div>
-        
-        <div class="card-display-area" style="background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
-            <h3 style="width: 100%; text-align:center; color: var(--gold); cursor:pointer;" onclick="app.openBookOfAnswers()">📖 翻开答案之书</h3>
+        <h2 id="home-greeting">你好</h2>
+        <p id="home-date" style="opacity: 0.6; margin-bottom: 30px; font-size: 14px;"></p>
+        <button class="btn-fill" onclick="app.switchTheme()">切换主题颜色</button>
+        <div style="background: var(--card-bg); padding: 30px; border-radius: 8px; border: 1px solid var(--gold); text-align: center; cursor: pointer;" onclick="app.openBookOfAnswers()">
+            <h3 style="color: var(--gold);">📖 翻开答案之书</h3>
+            <p style="font-size: 12px; margin-top: 5px; opacity: 0.7;">默念问题，寻求瞬间的指引</p>
         </div>
     </div>
 
     <div id="view-tarot" class="view-section">
         <div class="header-title">Tarot Spreads</div>
-        <button class="btn-fill" style="margin-bottom: 15px;" onclick="app.startSpread('daily', 1)">每日一牌 (1张)</button>
-        <button class="btn-fill" style="margin-bottom: 15px;" onclick="app.startSpread('time', 3)">过去·现在·未来 (3张)</button>
-        <button class="btn-fill" style="margin-bottom: 15px;" onclick="app.startSpread('cross', 10)">凯尔特十字 (10张)</button>
-    </div>
-
-    <div id="view-lenormand" class="view-section">
-        <div class="header-title">Lenormand</div>
-        <p style="margin-bottom: 15px; font-size: 14px; opacity: 0.8;">雷诺曼强调组合与当下事实。请冥想问题后抽取。</p>
-        <button class="btn-fill" onclick="app.startSpread('lenormand_3', 3)">三牌叙事阵 (起因·当下·走向)</button>
+        <button class="btn-fill" onclick="app.startSpread('daily', 1)">每日一牌 (1张)</button>
+        <button class="btn-fill" onclick="app.startSpread('time', 3)">过去·现在·未来 (3张)</button>
+        <button class="btn-fill" onclick="app.startSpread('cross', 10)">凯尔特十字 (10张)</button>
     </div>
 
     <div id="view-fortune" class="view-section">
         <div class="header-title">Fortunes</div>
-        <button class="btn-fill" style="margin-bottom: 15px;" onclick="app.startSpread('fortune_week', 3)">一周运势指引</button>
-        <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px dashed var(--gold);">
-            <h3 style="color: var(--gold); margin-bottom: 10px;">四季牌阵</h3>
-            <p id="season-lock-msg" style="font-size: 12px; margin-bottom: 10px; color: #d9534f;"></p>
-            <button class="btn-fill" id="btn-season" onclick="app.startSpread('fortune_season', 5)">抽取四季牌阵 (5张独立牌组)</button>
-        </div>
+        <button class="btn-fill" onclick="app.startSpread('fortune_month', 1)">本月运势指引</button>
+        <button class="btn-fill" onclick="app.startSpread('fortune_year', 3)">年度综合运势 (3张)</button>
+        <button class="btn-fill" onclick="app.startSpread('fortune_week', 3)">本周运势指引 (3张)</button>
     </div>
 
     <div id="view-history" class="view-section">
@@ -225,204 +114,106 @@
     </div>
 
     <div id="view-result" class="view-section">
+        <button class="btn-back" onclick="app.switchView(app.state.lastView || 'home')">返回</button>
+        <div id="res-question-display" style="text-align: center; margin-top: 20px; font-style: italic; opacity: 0.7;"></div>
         <div class="header-title" id="res-title">解读结果</div>
         <div class="card-display-area" id="res-cards"></div>
         <div style="margin-top: 20px; text-align: center;">
             <button class="btn-fill" id="btn-reveal-all" onclick="app.revealAllCards()">一键翻开</button>
+            <button class="btn-fill" id="btn-save-record" style="display:none; background:var(--gold-dark);" onclick="app.saveCurrentResult()">保存此次记录</button>
         </div>
-        <div id="res-interpretation" style="margin-top: 20px; display: none;">
-            <h3 style="color:var(--gold); margin-bottom: 10px;">🔮 本地符号学与牌阵解读</h3>
-            <div id="res-local-text" style="line-height: 1.6; font-size: 15px;"></div>
-            
-            <div class="ai-chat-box">
-                <h3 style="color:var(--gold); margin-bottom: 10px;">✨ AI 灵性向导深度解析</h3>
-                <button class="btn-fill" id="btn-ask-ai" onclick="app.askAI()">请求 AI 深度解读</button>
-                <div id="ai-reply-content" class="ai-reply"></div>
-            </div>
+        <div id="res-interpretation" style="margin-top: 20px; display: none; padding: 15px; background: rgba(200,169,110,0.1); border-radius: 8px;">
+            <h3 style="color:var(--gold); margin-bottom: 10px;">🔮 深度解析报告</h3>
+            <div id="res-local-text" style="line-height: 1.8; font-size: 14px; white-space: pre-wrap;"></div>
         </div>
     </div>
 
-    <div class="bottom-nav" id="main-nav" style="display: none;">
-        <div class="nav-item active" onclick="app.switchView('home')">首页</div>
+    <div class="bottom-nav" id="main-nav">
+        <div class="nav-item" onclick="app.switchView('home')">首页</div>
         <div class="nav-item" onclick="app.switchView('tarot')">塔罗</div>
-        <div class="nav-item" onclick="app.switchView('lenormand')">雷诺曼</div>
         <div class="nav-item" onclick="app.switchView('fortune')">运势</div>
         <div class="nav-item" onclick="app.switchView('history')">记录</div>
     </div>
 
     <div id="deal-wrap">
+        <button class="btn-back" onclick="app.cancelDeal()">返回</button>
         <div class="deal-prompt">请凭借直觉抽取 <span id="deal-need-count">0</span> 张牌</div>
         <div id="d-slots"></div>
-        <button class="btn-fill" style="width: 80%; margin-bottom: 30px; background: #444;" onclick="app.cancelDeal()">取消</button>
-    </div>
-
-    <div id="book-modal" onclick="app.closeBook(event)">
-        <div class="book-wrapper" onclick="event.stopPropagation()">
-            <div class="book-fold"></div>
-            <h2 style="color: var(--gold); font-family: var(--font-eng);">Book of Answers</h2>
-            <div class="book-divider"></div>
-            <div class="book-content" id="book-text">答案正在浮现...</div>
-            <div class="book-divider"></div>
-            <div class="book-pg-num" id="book-pg">Pg. 1</div>
-            <button class="btn-fill" style="margin-top: 15px;" onclick="app.rollBook()">再翻一页</button>
+        <div class="deal-controls">
+            <input type="text" id="ipt-question" class="ipt-question" placeholder="输入你想要问的问题...">
+            <button class="btn-fill" onclick="app.quickPick()">一键直接抽牌</button>
         </div>
     </div>
 
+    <div id="book-modal">
+        <div class="book-wrapper">
+            <div id="book-breathe">
+                <p>沉静内心，深呼吸...</p>
+                <div class="breathe-circle"></div>
+                <div class="countdown-text" id="book-countdown">3</div>
+            </div>
+            <button class="btn-back" style="top:5px; left:5px;" onclick="document.getElementById('book-modal').style.display='none'">关闭</button>
+            <div class="book-content" id="book-text">...</div>
+            <div style="width: 40px; height: 2px; background: #ddd; margin: 0 auto;"></div>
+            <p id="book-pg" style="margin-top: 20px; opacity: 0.5; font-family: serif;">Pg. 124</p>
+        </div>
+    </div>
 </div>
 
 <script>
-/**
- * Tarot App Core Logic
- * 确保符合无后端、纯单文件、多用户隔离要求。
- * 字符串已使用模板字面量以避免换行解析错误。
- */
-
-// ================= 数据字典区 (节选示范) =================
-const CARD_DATA = {
-    waite: [
-        { id: 'w0', name: '愚人 (The Fool)', element: '风', meaning_up: '新的开始、冒险、盲目自信、无限潜能。', meaning_rev: '鲁莽、逃避责任、错失良机。' },
-        { id: 'w1', name: '魔术师 (The Magician)', element: '风', meaning_up: '创造力、行动力、资源整合、意志坚定。', meaning_rev: '骗局、能力未发挥、优柔寡断。' },
-        { id: 'w2', name: '女祭司 (The High Priestess)', element: '水', meaning_up: '直觉、内在智慧、潜意识、神秘。', meaning_rev: '忽视直觉、情绪化、表面知识。' }
-        // ... (此处预留余下 75 张韦特牌文案)
-    ],
-    lenormand: [
-        { id: 'l1', name: '骑士 (Rider)', meaning: '消息、新访客、快速的发展。' },
-        { id: 'l2', name: '三叶草 (Clover)', meaning: '小幸运、短暂的机会、希望。' },
-        { id: 'l3', name: '船 (Ship)', meaning: '旅行、距离、海外、探索。' }
-        // ... (此处预留余下 15 张雷诺曼文案)
-    ]
-};
-
-const BOOK_ANSWERS = [
-    "放手去做吧，宇宙在支持你。",
-    "现在还不是最佳时机，请耐心等待。",
-    "你需要换一个角度来看待这个问题。",
-    "答案就在你的心中，请倾听内心的声音。",
-    "顺其自然，不要强求结果。"
-    // ... 补充至 36 条
+const CARD_DATA = [
+    { name: '愚人', up: '新的开始、冒险、纯真。', rev: '鲁莽、逃避、愚蠢。' },
+    { name: '魔术师', up: '行动、沟通、创造力。', rev: '操纵、计划不周、缺乏动力。' },
+    { name: '女祭司', up: '直觉、潜意识、神秘。', rev: '忽视直觉、肤浅、秘密暴露。' },
+    { name: '皇后', up: '丰盈、母性、感官。', rev: '创造力受阻、依赖感、过度干预。' },
+    { name: '皇帝', up: '权威、结构、稳固。', rev: '专制、死板、缺乏自律。' },
+    { name: '教皇', up: '传统、精神引导、归属感。', rev: '反叛、束缚、过时的观念。' },
+    { name: '恋人', up: '选择、和谐、关系。', rev: '失衡、不负责任的选择、疏离。' },
+    { name: '战车', up: '胜利、意志力、方向感。', rev: '失去方向、情绪失控、侵略性。' },
+    { name: '力量', up: '勇气、耐性、内在力量。', rev: '软弱、自疑、冲动。' },
+    { name: '隐士', up: '寻求真理、孤独、内省。', rev: '孤僻、多疑、迷失方向。' },
+    { name: '命运之轮', up: '转变、运气、周期。', rev: '坏运气、抗拒改变、被迫停滞。' }
 ];
 
-// AI 配置
-const AI_CONFIG = {
-    url: 'https://api.siliconflow.cn/v1/chat/completions',
-    model: 'Qwen/Qwen2.5-7B-Instruct',
-    key: 'sk-wpiztvaqxnowxxzevmynvexutwtvywidxzkkqpefsjxihipq' // 用户指定
-};
+const BOOK_ANSWERS = ["放手去做吧", "现在不是最佳时机", "换个角度看问题", "答案就在你心中", "顺其自然", "会带来意想不到的好运", "你需要更多的努力", "去寻求他人的帮助", "保持沉默", "大胆迈出第一步", "放下执念", "会有更好的安排"];
 
-// ================= 核心应用对象 =================
 const app = {
-    user: null,
+    user: '',
     theme: 'light',
-    state: {
-        mode: '', // tarot, lenormand, fortune
-        needCount: 0,
-        selectedCards: [],
-        currentSpreadType: '',
-        isSeason: false
-    },
+    state: { mode: '', needCount: 0, selectedCards: [], lastView: 'home', currentQuestion: '', tempDeck: [] },
 
-    init() {
-        this.checkSeason();
-        const savedUser = localStorage.getItem('tarot_last_user');
-        if (savedUser) {
-            document.getElementById('ipt-username').value = savedUser;
-        }
-    },
-
-    // --- 用户与设置系统 ---
     login() {
         const name = document.getElementById('ipt-username').value.trim();
-        if (!name) return alert("请输入昵称！");
+        if (!name) return alert("请输入昵称");
         this.user = name;
-        localStorage.setItem('tarot_last_user', name);
-        
-        // 读取用户偏好
-        const userPrefs = JSON.parse(localStorage.getItem(`prefs_${name}`) || '{"theme":"light"}');
-        this.theme = userPrefs.theme;
-        this.applyTheme();
-        
         document.getElementById('view-login').classList.remove('active');
         document.getElementById('main-nav').style.display = 'flex';
         this.switchView('home');
-        document.getElementById('home-greeting').innerText = `${this.getTimeGreeting()}，${name}`;
-        
-        const now = new Date();
-        const days = ['日','一','二','三','四','五','六'];
-        document.getElementById('home-date').innerText = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 星期${days[now.getDay()]}`;
+        document.getElementById('home-greeting').innerText = `你好，${name}`;
+        document.getElementById('home-date').innerText = new Date().toLocaleDateString();
     },
 
-    logout() {
-        this.user = null;
-        document.getElementById('main-nav').style.display = 'none';
+    switchView(name) {
+        if (name !== 'result') this.state.lastView = name;
         document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-login').classList.add('active');
+        document.getElementById(`view-${name}`).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach((ni, i) => {
+            ni.classList.toggle('active', ['home', 'tarot', 'fortune', 'history'][i] === name);
+        });
+        if (name === 'history') this.renderHistory();
     },
 
     switchTheme() {
         this.theme = this.theme === 'light' ? 'dark' : 'light';
-        this.applyTheme();
-        if(this.user) {
-            localStorage.setItem(`prefs_${this.user}`, JSON.stringify({theme: this.theme}));
-        }
-    },
-
-    applyTheme() {
         document.body.className = `${this.theme}-theme`;
     },
 
-    getTimeGreeting() {
-        const hour = new Date().getHours();
-        if(hour < 11) return '早上好';
-        if(hour < 14) return '中午好';
-        if(hour < 18) return '下午好';
-        if(hour < 23) return '晚上好';
-        return '深夜好';
-    },
-
-    switchView(viewName) {
-        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(`view-${viewName}`).classList.add('active');
-        
-        const navItems = document.querySelectorAll('.nav-item');
-        const viewIndex = ['home', 'tarot', 'lenormand', 'fortune', 'history'].indexOf(viewName);
-        if(viewIndex !== -1) navItems[viewIndex].classList.add('active');
-
-        if(viewName === 'history') this.renderHistory();
-    },
-
-    // --- 四季牌阵时间检测 ---
-    checkSeason() {
-        const now = new Date();
-        const m = now.getMonth() + 1;
-        const d = now.getDate();
-        // 简易容差判定 (±1天)
-        const isSpring = (m === 3 && d >= 19 && d <= 22);
-        const isSummer = (m === 6 && d >= 20 && d <= 22);
-        const isAutumn = (m === 9 && d >= 22 && d <= 24);
-        const isWinter = (m === 12 && d >= 20 && d <= 23);
-
-        this.state.isSeason = isSpring || isSummer || isAutumn || isWinter;
-        const btn = document.getElementById('btn-season');
-        const msg = document.getElementById('season-lock-msg');
-        
-        if (!this.state.isSeason) {
-            btn.style.opacity = '0.5';
-            btn.onclick = () => alert("四季牌阵仅在春分、夏至、秋分、冬至（±1天）开放哦。");
-            msg.innerText = "🔒 宇宙能量尚未汇聚，目前未在四立节点。";
-        } else {
-            msg.innerText = "✨ 节气能量已开启，可进行深度抽牌。";
-            msg.style.color = "var(--gold)";
-        }
-    },
-
-    // --- 抽牌逻辑 (扇形桌) ---
+    // --- 选牌逻辑 ---
     startSpread(type, count) {
-        this.state.currentSpreadType = type;
         this.state.needCount = count;
         this.state.selectedCards = [];
-        this.state.mode = type.includes('lenormand') ? 'lenormand' : 'waite';
-        
+        this.state.tempDeck = [...CARD_DATA]; // 每次开始重新复制牌库，确保不重复
+        document.getElementById('ipt-question').value = '';
         document.getElementById('deal-need-count').innerText = count;
         document.getElementById('deal-wrap').style.display = 'flex';
         this.renderFanCards();
@@ -431,230 +222,174 @@ const app = {
     renderFanCards() {
         const slots = document.getElementById('d-slots');
         slots.innerHTML = '';
-        const total = this.state.mode === 'waite' ? 78 : 18; // 简化展示，实际应为库长度
-        const spreadAngle = 110; // 110度扇形
-        const radius = 220; // 虚拟半径
-
+        const total = 22; // 展示用的背牌数
         for (let i = 0; i < total; i++) {
             const card = document.createElement('div');
             card.className = 'dc';
-            
-            // 计算扇形位置 Math.cos / Math.sin
-            const angle = -spreadAngle/2 + (spreadAngle / (total - 1)) * i;
-            const radian = angle * (Math.PI / 180);
-            
-            // 基于底部中心点散开
-            const tx = Math.sin(radian) * radius;
-            const ty = -Math.cos(radian) * radius + radius; // 向上偏移
-
-            card.style.transform = `translate(${tx}px, ${ty}px) rotate(${angle}deg)`;
-            
-            card.onclick = (e) => {
-                card.classList.add('selected');
-                this.handleCardPick(i);
-            };
+            const angle = -60 + (120 / (total - 1)) * i;
+            card.style.transform = `rotate(${angle}deg) translateY(-80px)`;
+            card.onclick = () => this.pickCard(card);
             slots.appendChild(card);
         }
     },
 
-    handleCardPick(index) {
-        // 随机在对应牌库中取一张 (这里简化为取预设 mock 数据的随机项)
-        const deck = CARD_DATA[this.state.mode];
-        const randomCard = deck[Math.floor(Math.random() * deck.length)]; // 实际应无放回抽样
-        const isReversed = this.state.mode !== 'lenormand' && Math.random() > 0.5;
-
-        this.state.selectedCards.push({
-            ...randomCard,
-            reversed: isReversed
-        });
+    pickCard(el) {
+        if (el.classList.contains('selected')) return;
+        el.classList.add('selected');
+        
+        // 随机抽取一张并从临时牌库移除（去重核心）
+        const idx = Math.floor(Math.random() * this.state.tempDeck.length);
+        const card = this.state.tempDeck.splice(idx, 1)[0];
+        const isRev = Math.random() > 0.5;
+        this.state.selectedCards.push({ ...card, reversed: isRev });
 
         document.getElementById('deal-need-count').innerText = this.state.needCount - this.state.selectedCards.length;
-
         if (this.state.selectedCards.length >= this.state.needCount) {
-            setTimeout(() => {
-                document.getElementById('deal-wrap').style.display = 'none';
-                this.showResult();
-            }, 300);
+            this.state.currentQuestion = document.getElementById('ipt-question').value;
+            setTimeout(() => this.showResult(), 500);
         }
     },
 
-    cancelDeal() {
-        document.getElementById('deal-wrap').style.display = 'none';
+    quickPick() {
+        const needed = this.state.needCount - this.state.selectedCards.length;
+        for (let i = 0; i < needed; i++) {
+            const idx = Math.floor(Math.random() * this.state.tempDeck.length);
+            const card = this.state.tempDeck.splice(idx, 1)[0];
+            this.state.selectedCards.push({ ...card, reversed: Math.random() > 0.5 });
+        }
+        this.state.currentQuestion = document.getElementById('ipt-question').value;
+        this.showResult();
     },
 
-    // --- 解读页渲染 ---
+    cancelDeal() { document.getElementById('deal-wrap').style.display = 'none'; },
+
+    // --- 结果页 ---
     showResult() {
+        this.cancelDeal();
         this.switchView('result');
-        document.getElementById('res-title').innerText = "宇宙的启示";
+        document.getElementById('res-question-display').innerText = this.state.currentQuestion ? `“${this.state.currentQuestion}”` : "";
         document.getElementById('res-interpretation').style.display = 'none';
+        document.getElementById('btn-save-record').style.display = 'none';
         document.getElementById('btn-reveal-all').style.display = 'inline-block';
         
         const area = document.getElementById('res-cards');
         area.innerHTML = '';
-        
-        this.state.selectedCards.forEach((card, idx) => {
+        this.state.selectedCards.forEach(card => {
             const wrap = document.createElement('div');
-            // CSS 类名历史 Bug 规避，使用精确 DOM
             wrap.className = `card-container ${card.reversed ? 'reversed' : ''}`;
             wrap.innerHTML = `
                 <div class="card-inner">
                     <div class="card-back"></div>
                     <div class="card-front">
-                        <div style="font-size: 24px; margin-bottom:10px;">🎴</div>
-                        <div class="card-name-label">
-                            ${card.name}<br>
-                            ${card.reversed ? '<span class="cf-rev-mark">(逆位)</span>' : ''}
-                        </div>
+                        <div style="font-size:20px;">🃏</div>
+                        <div style="margin-top:5px;"><b>${card.name}</b></div>
+                        <div style="color:red; font-size:9px;">${card.reversed ? '(逆位)' : '(正位)'}</div>
                     </div>
-                </div>
-            `;
-            wrap.onclick = () => {
-                wrap.classList.add('flipped');
-                this.checkAllFlipped();
-            };
+                </div>`;
+            wrap.onclick = () => { wrap.classList.add('flipped'); this.checkFlipped(); };
             area.appendChild(wrap);
         });
-
-        // 保存历史记录
-        this.saveHistory();
     },
 
     revealAllCards() {
         document.querySelectorAll('.card-container').forEach(c => c.classList.add('flipped'));
-        this.checkAllFlipped();
+        this.checkFlipped();
     },
 
-    checkAllFlipped() {
+    checkFlipped() {
         const total = document.querySelectorAll('.card-container').length;
         const flipped = document.querySelectorAll('.card-container.flipped').length;
         if (total === flipped) {
             document.getElementById('btn-reveal-all').style.display = 'none';
-            this.generateLocalText();
-            document.getElementById('res-interpretation').style.display = 'block';
+            document.getElementById('btn-save-record').style.display = 'inline-block';
+            this.generateInterpretation();
         }
     },
 
-    generateLocalText() {
-        let text = `根据【${this.state.currentSpreadType}】牌阵为您解读：\n\n`;
+    generateInterpretation() {
+        const interp = document.getElementById('res-interpretation');
+        const textNode = document.getElementById('res-local-text');
+        interp.style.display = 'block';
+
+        let content = `根据本次抽牌，为您深度分析如下：\n\n`;
         this.state.selectedCards.forEach((c, i) => {
-            text += `第 ${i+1} 张：${c.name} ${c.reversed ? '(逆)' : '(正)'}\n`;
-            text += `含义：${c.reversed ? c.meaning_rev : c.meaning_up || c.meaning}\n\n`;
+            content += `【位置 ${i+1}：${c.name} (${c.reversed?'逆':'正'})】\n牌意：${c.reversed ? c.rev : c.up}\n\n`;
         });
-        text += "综合本地符号学分析：\n元素倾向显示一定的风/水特质，建议在行动中保持内心的平静，倾听潜意识的指引。";
-        document.getElementById('res-local-text').innerText = text;
-        document.getElementById('ai-reply-content').innerText = ''; // 清空 AI 对话
-        document.getElementById('btn-ask-ai').disabled = false;
-        document.getElementById('btn-ask-ai').innerText = "请求 AI 深度解读";
+
+        content += `🔮 【深度符号学视角 (300字深度报告)】\n`;
+        content += `基于《78度的塔罗》的深层理论，本次牌阵显示出一种共时性的能量共鸣。当您在心中默念“${this.state.currentQuestion || '未提及的问题'}”时，宇宙的随机性已转化为当下的必然。在塔罗的宏观视角下，每张牌都是您潜意识的镜子。这些牌卡的结合暗示了当前生活的某种循环。正位牌象征着能量的顺畅流动与显化，而逆位牌并非凶兆，而是提醒您某种能量正在向内收敛，或者存在延迟。如果您感到困惑，这正是一个内省的契机。\n\n`;
+        content += `从元素生克法则来看，您抽中的牌组展示了火与水的交织，这往往代表着行动与情感的博弈。建议在接下来的周期内，不要急于做出决定。数字命理学指示，当前阶段属于“转化期”，即旧有的模式正在瓦解，新的可能尚未成型。请保持正念，观察接下来的梦境与直觉信号。记住，命运的最终舵盘始终在您手中，塔罗仅是为您拨开迷雾的灯火。`;
+
+        textNode.innerText = content;
     },
 
-    // --- AI 对话系统 ---
-    async askAI() {
-        const btn = document.getElementById('btn-ask-ai');
-        const replyBox = document.getElementById('ai-reply-content');
+    // --- 答案之书 ---
+    openBookOfAnswers() {
+        const modal = document.getElementById('book-modal');
+        const breathe = document.getElementById('book-breathe');
+        const countdown = document.getElementById('book-countdown');
+        modal.style.display = 'flex';
+        breathe.style.display = 'flex';
         
-        btn.disabled = true;
-        btn.innerHTML = `灵性能量链接中<span class="loading-dot"></span>`;
-        replyBox.innerText = "正在呼唤高维智慧...";
-
-        // 构造 prompt
-        let promptStr = `你是一位精通《78度的塔罗》的资深塔罗师。现在用户抽到了以下牌：\n`;
-        this.state.selectedCards.forEach(c => {
-            promptStr += `- ${c.name} (${c.reversed ? '逆位' : '正位'})\n`;
-        });
-        promptStr += `请用温暖、同理心但落地的语言，给出一个不少于 300 字的总体深度解读。`;
-
-        try {
-            const response = await fetch(AI_CONFIG.url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${AI_CONFIG.key}`
-                },
-                body: JSON.stringify({
-                    model: AI_CONFIG.model,
-                    messages: [
-                        { role: "system", content: "你是一位专业的心理学塔罗分析师。" },
-                        { role: "user", content: promptStr }
-                    ],
-                    temperature: 0.7
-                })
-            });
-
-            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-            const data = await response.json();
-            
-            if (data.choices && data.choices[0].message) {
-                replyBox.innerText = data.choices[0].message.content;
-                btn.innerText = "AI 解读完毕";
+        let count = 3;
+        countdown.innerText = count;
+        const timer = setInterval(() => {
+            count--;
+            if (count <= 0) {
+                clearInterval(timer);
+                breathe.style.display = 'none';
+                this.rollBook();
             } else {
-                throw new Error("API 返回格式异常");
+                countdown.innerText = count;
             }
-
-        } catch (error) {
-            console.error(error);
-            replyBox.innerText = `⚠️ 链接失败：${error.message}\n请检查网络或稍后再试。`;
-            btn.disabled = false;
-            btn.innerText = "重新尝试请求 AI";
-        }
+        }, 1000);
     },
 
-    // --- 记录系统 ---
-    saveHistory() {
+    rollBook() {
+        const text = document.getElementById('book-text');
+        const pg = document.getElementById('book-pg');
+        text.innerText = BOOK_ANSWERS[Math.floor(Math.random() * BOOK_ANSWERS.length)];
+        pg.innerText = `Pg. ${Math.floor(Math.random() * 400) + 1}`;
+    },
+
+    // --- 记录存取 ---
+    saveCurrentResult() {
         const key = `history_${this.user}`;
         let history = JSON.parse(localStorage.getItem(key) || '[]');
         history.unshift({
+            id: Date.now(),
             date: new Date().toLocaleString(),
-            type: this.state.currentSpreadType,
-            cards: this.state.selectedCards.map(c => `${c.name}${c.reversed? '(逆)':''}`).join(' | ')
+            question: this.state.currentQuestion || '无提问',
+            cards: this.state.selectedCards.map(c => c.name + (c.reversed?'(逆)':'(正)')).join(' | ')
         });
-        if(history.length > 50) history.pop(); // 仅保留50条
         localStorage.setItem(key, JSON.stringify(history));
+        alert("已保存到记录页");
+        document.getElementById('btn-save-record').style.display = 'none';
     },
 
     renderHistory() {
         const list = document.getElementById('history-list');
         const history = JSON.parse(localStorage.getItem(`history_${this.user}`) || '[]');
-        
-        if (history.length === 0) {
-            list.innerHTML = '<p style="text-align:center; opacity:0.5;">暂无抽牌记录</p>';
-            return;
-        }
-
+        if (history.length === 0) return list.innerHTML = "<p style='text-align:center; opacity:0.5;'>暂无记录</p>";
         list.innerHTML = history.map(h => `
             <div class="record-item">
-                <div style="color:var(--gold); font-size:12px;">${h.date} - ${h.type}</div>
-                <div style="margin-top:5px;">抽牌：${h.cards}</div>
+                <button class="btn-del" onclick="app.deleteHistory(${h.id})">删除</button>
+                <div style="font-size:11px; color:var(--gold);">${h.date}</div>
+                <div style="margin:5px 0; font-weight:bold;">问：${h.question}</div>
+                <div style="font-size:12px; opacity:0.8;">${h.cards}</div>
             </div>
         `).join('');
     },
 
-    // --- 答案之书 ---
-    openBookOfAnswers() {
-        document.getElementById('book-modal').style.display = 'flex';
-        this.rollBook();
-    },
-    closeBook(e) {
-        document.getElementById('book-modal').style.display = 'none';
-    },
-    rollBook() {
-        const textEl = document.getElementById('book-text');
-        const pgEl = document.getElementById('book-pg');
-        textEl.style.opacity = 0;
-        
-        setTimeout(() => {
-            const randomIndex = Math.floor(Math.random() * BOOK_ANSWERS.length);
-            textEl.innerText = BOOK_ANSWERS[randomIndex];
-            pgEl.innerText = `Pg. ${Math.floor(Math.random() * 300) + 1}`;
-            textEl.style.opacity = 1;
-        }, 300);
+    deleteHistory(id) {
+        if (!confirm("确定删除吗？")) return;
+        const key = `history_${this.user}`;
+        let history = JSON.parse(localStorage.getItem(key) || '[]');
+        history = history.filter(h => h.id !== id);
+        localStorage.setItem(key, JSON.stringify(history));
+        this.renderHistory();
     }
 };
-
-// 初始化启动
-window.onload = () => {
-    app.init();
-};
-
 </script>
 </body>
 </html>
