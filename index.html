@@ -3,341 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>灵性祭坛 · 塔罗与六爻</title>
+    <title>灵性祭坛 · 专业版</title>
     <style>
-        /* ================= 苹果圆体与全局 UI ================= */
+        /* --- 视觉与 UI 规范 --- */
         :root {
             --gold: #C8A96E;
-            --bg: #F2F2F7;
-            --card-bg: #FFFFFF;
-            --text: #1C1C1E;
-            --font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            --rose: #C4786A;
+            --blue: #5B7FA6;
+            /* 浅色模式 */
+            --bg: #F4F1EB;
+            --paper: #FDFAF4;
+            --ink: #1A1814;
+            --shadow: rgba(26, 24, 20, 0.1);
+            --radius: 20px;
         }
 
-        body.dark {
-            --bg: #000000;
-            --card-bg: #1C1C1E;
-            --text: #F2F2F7;
+        .dark-mode {
+            --bg: #111009;
+            --paper: #1A1712;
+            --ink: #EDE9E1;
+            --shadow: rgba(0, 0, 0, 0.5);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
-        body { background: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; }
-
-        .app-shell { width: 100%; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; }
-        .view { display: none; padding: 20px; padding-bottom: 100px; animation: fadeIn 0.4s ease; }
-        .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 顶部标题栏 */
-        .header { padding: 40px 0 20px; text-align: center; }
-        .header h1 { font-weight: 600; font-size: 24px; color: var(--gold); letter-spacing: 1px; }
-
-        /* 按钮样式 */
-        .btn { 
-            background: var(--gold); color: white; border: none; 
-            padding: 16px; border-radius: 18px; width: 100%; 
-            font-size: 16px; font-weight: 500; margin-bottom: 15px;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(200,169,110,0.2);
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'PingFang SC', 'Quicksand', sans-serif;
+            background-color: var(--bg);
+            color: var(--ink);
+            transition: background 0.5s ease;
+            display: flex;
+            justify-content: center;
         }
-        .btn-outline { background: transparent; border: 1.5px solid var(--gold); color: var(--gold); }
 
-        /* --- 抽牌遮罩布局优化 (Anti-Overlap) --- */
-        #mask-layer {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 2000; display: none; flex-direction: column;
+        #app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
         }
-        .mask-header { height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
-        .mask-body { flex: 1; position: relative; display: flex; justify-content: center; align-items: flex-end; overflow: hidden; }
-        .mask-footer { height: 200px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* 扇形牌组 */
-        .card-fan { position: absolute; width: 120%; height: 300px; bottom: -50px; display: flex; justify-content: center; }
-        .p-card { 
-            position: absolute; width: 60px; height: 100px; 
-            background: #2c2c2e; border: 1px solid var(--gold); border-radius: 6px;
-            transform-origin: center 300px; transition: 0.3s; cursor: pointer;
-            background-image: url('https://www.sacred-texts.com/tarot/pkt/img/back.jpg'); background-size: cover;
+
+        /* --- 顶部问候 --- */
+        header {
+            padding: 20px;
+            text-align: left;
+            z-index: 10;
         }
-        .p-card:hover { transform: scale(1.1) translateY(-20px) !important; z-index: 100; }
 
-        /* --- 六爻页面样式 --- */
-        .yi-box { background: var(--card-bg); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(200,169,110,0.1); }
-        .coin-area { display: flex; justify-content: space-around; margin: 30px 0; }
-        .coin { width: 60px; height: 60px; background: #FFD700; border-radius: 50%; border: 4px double #B8860B; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; color: #8B4513; }
-        .yao-line { height: 12px; margin: 8px 0; border-radius: 6px; }
-        .yao-yang { background: var(--gold); width: 100%; }
-        .yao-yin { display: flex; justify-content: space-between; width: 100%; }
-        .yao-yin div { background: var(--gold); width: 45%; height: 100%; border-radius: 6px; }
-        .yao-old { background: #FF3B30 !important; } /* 动爻高亮 */
+        .greeting { font-size: 1.2rem; font-weight: 600; margin: 0; }
+        .date-info { font-size: 0.8rem; opacity: 0.7; }
 
-        /* 记录卡片 */
-        .history-item { background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 12px; position: relative; border-left: 4px solid var(--gold); }
-        .del-btn { position: absolute; top: 10px; right: 10px; color: #FF3B30; font-size: 12px; }
+        /* --- 核心内容区 --- */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 80px; /* 为导航留空 */
+        }
 
-        /* 导航栏 */
-        .nav { position: fixed; bottom: 0; width: 100%; max-width: 500px; height: 75px; background: var(--card-bg); display: flex; border-top: 1px solid rgba(0,0,0,0.05); z-index: 1000; }
-        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; opacity: 0.4; }
-        .nav-btn.active { opacity: 1; color: var(--gold); font-weight: bold; }
-        .nav-btn i { font-size: 20px; margin-bottom: 4px; }
+        /* --- 物理隔离的抽牌桌 --- */
+        #deal-wrap {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+        }
+
+        .pick-header { padding: 20px; text-align: center; }
+
+        /* 扇形牌桌 */
+        #d-slots {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .dc {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            width: 80px;
+            height: 140px;
+            background: var(--gold);
+            border-radius: 8px;
+            transform-origin: bottom center;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s;
+            box-shadow: 0 4px 10px var(--shadow);
+            border: 2px solid #fff;
+            cursor: pointer;
+        }
+
+        .dc:hover { transform: translateY(-20px) rotate(var(--angle)) !important; z-index: 200; }
+        .dc.selected { border-color: var(--rose); box-shadow: 0 0 15px var(--rose); }
+
+        /* --- 底部导航 --- */
+        nav {
+            position: fixed;
+            bottom: 0; width: 100%; max-width: 480px;
+            height: 70px;
+            background: var(--paper);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px var(--shadow);
+            border-radius: 20px 20px 0 0;
+            z-index: 50;
+        }
+
+        .nav-item { font-size: 0.7rem; text-align: center; color: var(--ink); opacity: 0.6; cursor: pointer; }
+        .nav-item.active { opacity: 1; color: var(--gold); font-weight: bold; }
+
+        /* --- 按钮样式 --- */
+        .btn-fill {
+            background: var(--gold);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        /* 六爻绘制区 */
+        .liuyao-canvas {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .yao { height: 10px; background: #ddd; position: relative; }
+        .yao.yang { background: var(--ink); }
+        .yao.yin { background: transparent; border-top: 10px dashed var(--ink); }
+        .cf-rev-mark { color: var(--rose); font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-<div class="app-shell">
-    <div id="v-home" class="view active">
-        <div class="header"><h1>灵性祭坛</h1><p style="opacity:0.5; font-size:12px; margin-top:5px;">2026 丙午年</p></div>
-        <div class="yi-box" onclick="ui.go('v-tarot')">
-            <h3 style="color:var(--gold)">🎴 塔罗圣典</h3>
-            <p style="font-size:12px; opacity:0.7; margin-top:5px;">整合 20 本经典著作智慧，深度洞察</p>
-        </div>
-        <div class="yi-box" onclick="ui.go('v-yi')">
-            <h3 style="color:var(--gold)">🐢 六爻金钱卦</h3>
-            <p style="font-size:12px; opacity:0.7; margin-top:5px;">古法排盘，灵光象吉</p>
-        </div>
-        <button class="btn btn-outline" onclick="ui.toggleTheme()">切换光影主题</button>
-    </div>
-
-    <div id="v-tarot" class="view">
-        <button class="btn-outline" style="padding:5px 15px; border-radius:10px; margin-bottom:20px;" onclick="ui.go('v-home')">← 返回</button>
-        <div class="yi-box" style="background:linear-gradient(135deg, #fff 0%, #f9f4e8 100%);" onclick="tarot.start('season', 5)">
-            <h3 style="color:#8B4513">🍂 四季牌阵 (2026 季度运势)</h3>
-            <p style="font-size:12px; margin-top:4px;">针对春分/夏至/秋分/冬至的深度布局</p>
-        </div>
-        <button class="btn" onclick="tarot.start('daily', 1)">每日一牌</button>
-        <button class="btn" onclick="tarot.start('time', 3)">时间流阵 (过去/现在/未来)</button>
-        <button class="btn" onclick="tarot.start('cross', 10)">凯尔特十字 (专业排盘)</button>
-    </div>
-
-    <div id="v-yi" class="view">
-        <button class="btn-outline" style="padding:5px 15px; border-radius:10px; margin-bottom:20px;" onclick="ui.go('v-home')">← 返回</button>
-        <div class="yi-box" id="yi-play-area">
-            <h2 style="text-align:center; margin-bottom:10px;">三才感应</h2>
-            <div id="yi-steps" style="text-align:center; font-size:14px; opacity:0.6;">请点击下方按钮掷钱，需掷六次</div>
-            <div class="coin-area">
-                <div class="coin" id="c1">?</div><div class="coin" id="c2">?</div><div class="coin" id="c3">?</div>
-            </div>
-            <div id="yi-lines-display" style="display:flex; flex-direction:column-reverse; align-items:center; margin:20px 0;">
+<div id="app-container">
+    <section id="view-home">
+        <header>
+            <p class="date-info" id="current-date"></p>
+            <h1 class="greeting" id="welcome-msg">您好</h1>
+        </header>
+        <main>
+            <div style="text-align: center; margin-top: 50px;">
+                <button class="btn-fill" onclick="openDealer('tarot')">开始塔罗占卜</button>
+                <div style="margin-top: 20px;">
+                    <button class="btn-fill" style="background: var(--blue);" onclick="switchTab('liuyao')">古法六爻</button>
                 </div>
-            <button class="btn" id="btn-toss" onclick="yi.toss()">掷杯起卦</button>
+            </div>
+        </main>
+    </section>
+
+    <section id="view-liuyao" style="display:none;">
+        <main>
+            <h2>古法六爻金钱卦</h2>
+            <div class="liuyao-canvas" id="yao-container"></div>
+            <button class="btn-fill" onclick="tossCoins()">掷钱 (掷6次)</button>
+            <div id="liuyao-result"></div>
+        </main>
+    </section>
+
+    <div id="deal-wrap">
+        <div class="pick-header">
+            <h3 id="pick-title">请静心思考你的问题，抽取 3 张牌</h3>
+            <p id="pick-count">已选择: 0/3</p>
+        </div>
+        <div id="d-slots"></div>
+        <div style="padding: 20px; text-align: center;">
+            <button class="btn-fill" onclick="confirmSelection()">确认解读</button>
+            <button onclick="closeDealer()" style="background:none; border:none; color:var(--ink); margin-left: 10px;">取消</button>
         </div>
     </div>
 
-    <div id="v-history" class="view">
-        <h2 style="margin-bottom:20px;">记录档案库</h2>
-        <div id="history-content"></div>
-    </div>
-
-    <div id="v-result" class="view">
-        <div id="res-header" style="text-align:center; margin-bottom:20px;"></div>
-        <div id="res-main"></div>
-        <div id="res-interpretation" class="yi-box" style="margin-top:20px; line-height:1.7;"></div>
-        <button class="btn" id="btn-save-record" onclick="ui.saveCurrent()">保存记录</button>
-    </div>
-
-    <div id="mask-layer">
-        <div class="mask-header">
-            <h2 id="mask-title">请凝神聚气</h2>
-            <p style="font-size:13px; opacity:0.8; margin-top:8px;">点击牌阵抽取: <span id="mask-count" style="color:var(--gold); font-weight:bold;">0</span></p>
-        </div>
-        <div class="mask-body">
-            <div class="card-fan" id="fan-container"></div>
-        </div>
-        <div class="mask-footer">
-            <input type="text" id="ipt-q" placeholder="输入你想要探寻的问题..." style="width:100%; padding:15px; border-radius:12px; background:#1c1c1e; border:1px solid var(--gold); color:white; margin-bottom:15px; text-align:center;">
-            <button class="btn" onclick="tarot.autoPick()">神圣指引 (一键抽取)</button>
-            <button class="btn btn-outline" style="color:white; border-color:#444;" onclick="tarot.close()">放弃</button>
-        </div>
-    </div>
-
-    <div class="nav">
-        <div class="nav-btn active" onclick="ui.go('v-home')"><i>🏠</i>首页</div>
-        <div class="nav-btn" onclick="ui.go('v-tarot')"><i>🎴</i>塔罗</div>
-        <div class="nav-btn" onclick="ui.go('v-yi')"><i>🐢</i>六爻</div>
-        <div class="nav-btn" onclick="ui.go('v-history')"><i>📜</i>记录</div>
-    </div>
+    <nav>
+        <div class="nav-item active" onclick="switchTab('home')">首页</div>
+        <div class="nav-item" onclick="switchTab('tarot')">塔罗</div>
+        <div class="nav-item" onclick="switchTab('liuyao')">六爻</div>
+        <div class="nav-item" onclick="switchTab('history')">记录</div>
+        <div class="nav-item" onclick="toggleTheme()">主题</div>
+    </nav>
 </div>
 
 <script>
-/** * 数据与引擎 
- */
-const TAROT_DB = []; // 78张牌库（逻辑同前，此处略，实际代码已含）
-for(let i=0;i<22;i++) TAROT_DB.push({id:i, name:`大阿尔卡纳-${i}`, img:`ar${i<10?'0'+i:i}`});
-for(let i=0;i<56;i++) TAROT_DB.push({id:22+i, name:`小阿尔卡纳-${i}`, img:`wa01`}); // 简化填充
+    /* --- 核心引擎代码 --- */
 
-const GUA_DATA = { "111111": {name:"乾为天", desc:"元亨利贞。天行健，君子以自强不息。"}, "000000": {name:"坤为地", desc:"地势坤，君子以厚德载物。"} /* 更多卦象 */ };
+    const state = {
+        user: '访客',
+        theme: 'light',
+        pickedCards: [],
+        maxPick: 3,
+        currentYao: []
+    };
 
-const ui = {
-    currentView: 'v-home',
-    state: null,
-    go(id) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(document.getElementById(id).querySelector('h2,h1').innerText.substring(0,2))));
-        if(id === 'v-history') this.loadHistory();
-    },
-    toggleTheme() { document.body.classList.toggle('dark'); },
-    saveCurrent() {
-        if(!this.state) return;
-        let logs = JSON.parse(localStorage.getItem('logs') || '[]');
-        logs.unshift({...this.state, date: new Date().toLocaleString()});
-        localStorage.setItem('logs', JSON.stringify(logs));
-        alert('记录已归档');
-        document.getElementById('btn-save-record').style.display='none';
-    },
-    loadHistory() {
-        const logs = JSON.parse(localStorage.getItem('logs') || '[]');
-        const container = document.getElementById('history-content');
-        if(logs.length === 0) { container.innerHTML = "<p style='text-align:center; opacity:0.5;'>空空如也</p>"; return; }
-        container.innerHTML = logs.map(l => `
-            <div class="history-item">
-                <span class="del-btn" onclick="ui.delHistory(${l.id})">删除</span>
-                <div style="font-size:11px; color:var(--gold);">${l.date}</div>
-                <div style="font-weight:bold; margin:5px 0;">${l.type}: ${l.q || '无题'}</div>
-                <div style="font-size:13px; opacity:0.8;">${l.summary}</div>
-            </div>
-        `).join('');
-    },
-    delHistory(id) {
-        let logs = JSON.parse(localStorage.getItem('logs') || '[]');
-        logs = logs.filter(l => l.id !== id);
-        localStorage.setItem('logs', JSON.stringify(logs));
-        this.loadHistory();
+    // 初始化
+    function init() {
+        updateTime();
+        loadUser();
     }
-};
 
-/** 塔罗逻辑 (整合20本书籍智慧) */
-const tarot = {
-    need: 0, picked: [],
-    start(mode, count) {
-        this.need = count; this.picked = [];
-        document.getElementById('mask-layer').style.display = 'flex';
-        document.getElementById('mask-count').innerText = count;
-        this.renderFan();
-    },
-    renderFan() {
-        const fan = document.getElementById('fan-container');
-        fan.innerHTML = '';
-        const total = 40;
-        for(let i=0; i<total; i++) {
+    function updateTime() {
+        const now = new Date();
+        const hours = now.getHours();
+        let greet = "深夜好";
+        if (hours >= 5 && hours < 12) greet = "早上好";
+        else if (hours >= 12 && hours < 18) greet = "下午好";
+        else if (hours >= 18 && hours < 23) greet = "晚上好";
+        
+        document.getElementById('welcome-msg').innerText = `${greet}, ${state.user}`;
+        document.getElementById('current-date').innerText = now.toLocaleDateString('zh-CN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    // 扇形牌桌生成
+    function openDealer(type) {
+        const wrap = document.getElementById('deal-wrap');
+        const slot = document.getElementById('d-slots');
+        wrap.style.display = 'flex';
+        slot.innerHTML = '';
+        state.pickedCards = [];
+        
+        const totalCards = 22; // 简化版演示：只用大阿
+        const radius = 220;
+        const startAngle = -55;
+        const endAngle = 55;
+        const step = (endAngle - startAngle) / (totalCards - 1);
+
+        for(let i=0; i<totalCards; i++) {
+            const angle = startAngle + (i * step);
             const card = document.createElement('div');
-            card.className = 'p-card';
-            const rot = -60 + (120/(total-1))*i;
-            card.style.transform = `rotate(${rot}deg)`;
-            card.onclick = () => this.draw(card);
-            fan.appendChild(card);
+            card.className = 'dc';
+            card.style.setProperty('--angle', `${angle}deg`);
+            card.style.transform = `translateX(-50%) rotate(${angle}deg) translateY(-${radius}px)`;
+            card.onclick = () => selectCard(card, i, angle);
+            slot.appendChild(card);
         }
-    },
-    draw(el) {
-        if(this.picked.length >= this.need || el.style.opacity === '0') return;
-        el.style.opacity = '0';
-        el.style.pointerEvents = 'none';
-        
-        // 核心：无重复抽牌
-        const deck = TAROT_DB.filter(c => !this.picked.find(p => p.id === c.id));
-        const card = deck[Math.floor(Math.random()*deck.length)];
-        this.picked.push({...card, isRev: Math.random() > 0.8});
-        
-        document.getElementById('mask-count').innerText = this.need - this.picked.length;
-        if(this.picked.length === this.need) setTimeout(() => this.showRes(), 500);
-    },
-    autoPick() { while(this.picked.length < this.need) this.draw({style:{}}); this.showRes(); },
-    showRes() {
-        this.close();
-        ui.go('v-result');
-        const q = document.getElementById('ipt-q').value || "冥冥之中的指引";
-        document.getElementById('res-header').innerHTML = `<h3>“${q}”</h3><p>塔罗圣典排盘</p>`;
-        
-        let html = '<div style="display:flex; flex-wrap:wrap; justify-content:center;">';
-        this.picked.forEach(c => {
-            html += `<div style="text-align:center; margin:10px;">
-                <img src="https://www.sacred-texts.com/tarot/pkt/img/${c.img}.jpg" style="width:80px; border-radius:5px; transform:${c.isRev?'rotate(180deg)':'none'}">
-                <div style="font-size:12px; margin-top:5px;">${c.name}${c.isRev?'(逆)':'(正)'}</div>
-            </div>`;
-        });
-        html += '</div>';
-        document.getElementById('res-main').innerHTML = html;
-        
-        // 基于20本书籍的逻辑合成解读
-        document.getElementById('res-interpretation').innerHTML = `
-            <strong>【灵性觉察】</strong><br>
-            根据画面中的符号流动，此卦象显示了能量在${this.picked[0].name}上的汇聚。结合韦特原始定义与现代心理占星学，${this.picked[0].isRev?'逆位意味着内在能量的受阻，需要重新审视目标':'正位预示着行动力的顺遂'}。<br><br>
-            <strong>【行动指南】</strong><br>
-            建议保持觉知，在接下来的周期中，避免情绪的极端化，寻找平衡点。
-        `;
-        ui.state = { id: Date.now(), type: '塔罗', q: q, summary: this.picked.map(p=>p.name).join(',') };
-    },
-    close() { document.getElementById('mask-layer').style.display = 'none'; }
-};
-
-/** 六爻金钱卦逻辑 (灵光象吉风) */
-const yi = {
-    results: [],
-    toss() {
-        if(this.results.length >= 6) return;
-        
-        // 模拟三枚钱：正面(3), 背面(2)
-        const c1 = Math.random() > 0.5 ? 3 : 2;
-        const c2 = Math.random() > 0.5 ? 3 : 2;
-        const c3 = Math.random() > 0.5 ? 3 : 2;
-        const sum = c1 + c2 + c3;
-        
-        this.results.push(sum);
-        this.updateUI(c1, c2, c3, sum);
-        
-        if(this.results.length === 6) {
-            document.getElementById('btn-toss').innerText = "查看排盘";
-            document.getElementById('btn-toss').onclick = () => this.showRes();
-        }
-    },
-    updateUI(c1, c2, c3, sum) {
-        document.getElementById('c1').innerText = c1===3?'字':'背';
-        document.getElementById('c2').innerText = c2===3?'字':'背';
-        document.getElementById('c3').innerText = c3===3?'字':'背';
-        
-        const line = document.createElement('div');
-        line.className = 'yao-line';
-        if(sum === 7 || sum === 9) line.className += ' yao-yang';
-        else line.innerHTML = '<div></div><div></div>'; line.className += ' yao-yin';
-        if(sum === 6 || sum === 9) line.style.border = "2px solid #FF3B30"; // 动爻标记
-        
-        document.getElementById('yi-lines-display').appendChild(line);
-        document.getElementById('yi-steps').innerText = `已完成第 ${this.results.length} 爻`;
-    },
-    showRes() {
-        ui.go('v-result');
-        const hex = this.results.map(s => (s===7||s===9)?'1':'0').join('');
-        const gua = GUA_DATA[hex] || {name:"周易卦象", desc:"卦象幽深，需静心感悟。"};
-        
-        document.getElementById('res-header').innerHTML = `<h2>${gua.name}</h2><p>六爻金钱卦排盘</p>`;
-        document.getElementById('res-main').innerHTML = `
-            <div class="yi-box" style="text-align:center;">
-                <div style="font-size:40px; color:var(--gold); margin-bottom:10px;">${this.getGuaIcon(hex)}</div>
-                <p>${gua.desc}</p>
-            </div>
-            <table style="width:100%; font-size:13px; text-align:center; border-collapse:collapse;">
-                <tr style="background:var(--gold); color:white;"><th>爻位</th><th>干支</th><th>六亲</th><th>神煞</th></tr>
-                ${this.renderTable()}
-            </table>
-        `;
-        document.getElementById('res-interpretation').innerText = "灵光象吉：此卦显示阴阳交泰，动爻出现在关键相位，暗示变动在即。需关注日辰月建之克合。";
-        ui.state = { id: Date.now(), type: '六爻', q: '起卦', summary: gua.name };
-        this.reset();
-    },
-    getGuaIcon(hex) { return "卦象如图"; },
-    renderTable() {
-        return `<tr><td>上爻</td><td>壬戌</td><td>父母</td><td>玄武</td></tr>
-                <tr><td>五爻</td><td>壬申</td><td>兄弟</td><td>青龙</td></tr>
-                <tr><td>四爻</td><td>壬午</td><td>官鬼</td><td>朱雀</td></tr>`;
-    },
-    reset() {
-        this.results = [];
-        document.getElementById('yi-lines-display').innerHTML = '';
-        document.getElementById('btn-toss').innerText = "掷杯起卦";
-        document.getElementById('btn-toss').onclick = () => this.toss();
     }
-};
 
-window.onload = () => { if(document.body.classList.contains('dark')) ui.toggleTheme(); };
+    function selectCard(el, idx, angle) {
+        if (el.classList.contains('selected')) return;
+        if (state.pickedCards.length >= state.maxPick) return;
+
+        el.classList.add('selected');
+        state.pickedCards.push(idx);
+        document.getElementById('pick-count').innerText = `已选择: ${state.pickedCards.length}/${state.maxPick}`;
+        
+        // 入场动画效果：单独弹出
+        el.style.transform = `translateX(-50%) rotate(${angle}deg) translateY(-${260}px) scale(1.1)`;
+    }
+
+    function closeDealer() {
+        document.getElementById('deal-wrap').style.display = 'none';
+    }
+
+    // 六爻模拟逻辑
+    function tossCoins() {
+        if (state.currentYao.length >= 6) {
+            state.currentYao = [];
+            document.getElementById('yao-container').innerHTML = '';
+        }
+
+        // 模拟三枚硬币：0为反，1为正
+        const coins = [Math.round(Math.random()), Math.round(Math.random()), Math.round(Math.random())];
+        const sum = coins.reduce((a, b) => a + b, 0); 
+        // 3正(3)=老阳○, 0正(0)=老阴×, 2正(2)=少阴--, 1正(1)=少阳—
+        let type = '';
+        if(sum === 3) type = 'old-yang';
+        else if(sum === 0) type = 'old-yin';
+        else if(sum === 2) type = 'yin';
+        else type = 'yang';
+
+        state.currentYao.push(type);
+        renderYao(type);
+    }
+
+    function renderYao(type) {
+        const container = document.getElementById('yao-container');
+        const yao = document.createElement('div');
+        yao.className = `yao ${type.includes('yang') ? 'yang' : 'yin'}`;
+        if(type.startsWith('old')) {
+            const mark = document.createElement('span');
+            mark.className = 'cf-rev-mark';
+            mark.innerText = type === 'old-yang' ? ' ○' : ' ×';
+            yao.appendChild(mark);
+        }
+        container.appendChild(yao);
+    }
+
+    // 视图切换
+    function switchTab(view) {
+        document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+        document.getElementById(`view-${view}`).style.display = 'block';
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        // 逻辑：对应导航高亮
+    }
+
+    // 主题切换
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        state.theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    }
+
+    function loadUser() {
+        const saved = localStorage.getItem('spirit_altar_user');
+        if(saved) state.user = saved;
+        updateTime();
+    }
+
+    init();
 </script>
+
 </body>
 </html>
