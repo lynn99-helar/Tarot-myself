@@ -167,6 +167,23 @@
         }
         .header-title { font-family: var(--font-eng); font-size: 24px; text-align: center; margin-bottom: 20px; color: var(--gold); }
         .record-item { padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px; font-size: 14px;}
+   /* ================= 新增：返回按钮、动画与居中优化 ================= */
+        .btn-back {
+            position: absolute; top: 15px; left: 15px; background: transparent; 
+            border: 1px solid var(--gold); color: var(--gold); padding: 5px 15px;
+            border-radius: 4px; cursor: pointer; z-index: 100;
+        }
+        /* 选牌桌居中优化 */
+        #deal-wrap { justify-content: center; } /* 改为正中间 */
+        #d-slots { bottom: 0; margin-top: 40px; }
+        .deal-controls { position: absolute; bottom: 30px; width: 80%; display: flex; flex-direction: column; gap: 10px; z-index: 201; }
+        .ipt-question { width: 100%; padding: 12px; border-radius: 4px; border: 1px solid var(--gold); background: var(--card-bg); color: var(--text-color); text-align: center;}
+        
+        /* 答案之书呼吸动画 */
+        #book-breathe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 301; border-radius: 8px;}
+        .breathe-circle { width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle, var(--gold) 0%, transparent 70%); animation: breathe 3s infinite ease-in-out; }
+        @keyframes breathe { 0% { transform: scale(0.8); opacity: 0.5; } 50% { transform: scale(1.5); opacity: 1; } 100% { transform: scale(0.8); opacity: 0.5; } }
+        .countdown-text { font-size: 30px; color: var(--gold); font-family: var(--font-eng); margin-top: 20px; font-weight: bold; }
     </style>
 </head>
 <body class="light-theme">
@@ -211,6 +228,8 @@
 
     <div id="view-fortune" class="view-section">
         <div class="header-title">Fortunes</div>
+        <button class="btn-fill" style="margin-bottom: 15px;" onclick="app.startSpread('fortune_month', 1)">本月运势指引</button>
+        <button class="btn-fill" style="margin-bottom: 15px;" onclick="app.startSpread('fortune_year', 3)">年度运势 (3张)</button>
         <button class="btn-fill" style="margin-bottom: 15px;" onclick="app.startSpread('fortune_week', 3)">一周运势指引</button>
         <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px dashed var(--gold);">
             <h3 style="color: var(--gold); margin-bottom: 10px;">四季牌阵</h3>
@@ -225,10 +244,12 @@
     </div>
 
     <div id="view-result" class="view-section">
+        <button class="btn-back" onclick="app.switchView(app.state.lastView || 'home')">返回</button>
+        <div style="text-align: center; margin-bottom: 10px; opacity: 0.8;" id="res-question-display"></div>
         <div class="header-title" id="res-title">解读结果</div>
         <div class="card-display-area" id="res-cards"></div>
         <div style="margin-top: 20px; text-align: center;">
-            <button class="btn-fill" id="btn-reveal-all" onclick="app.revealAllCards()">一键翻开</button>
+            <button class="btn-fill" id="btn-reveal-all" onclick="app.revealAllCards()">一键翻开</button><button class="btn-fill" id="btn-save-record" style="display:none; margin-top:10px; background:var(--gold-dark);" onclick="app.saveCurrentResult()">保存此次占卜记录</button>
         </div>
         <div id="res-interpretation" style="margin-top: 20px; display: none;">
             <h3 style="color:var(--gold); margin-bottom: 10px;">🔮 本地符号学与牌阵解读</h3>
@@ -251,25 +272,16 @@
     </div>
 
     <div id="deal-wrap">
+        <div id="deal-wrap">
+        <button class="btn-back" onclick="app.cancelDeal()">返回</button>
         <div class="deal-prompt">请凭借直觉抽取 <span id="deal-need-count">0</span> 张牌</div>
         <div id="d-slots"></div>
-        <button class="btn-fill" style="width: 80%; margin-bottom: 30px; background: #444;" onclick="app.cancelDeal()">取消</button>
-    </div>
-
-    <div id="book-modal" onclick="app.closeBook(event)">
-        <div class="book-wrapper" onclick="event.stopPropagation()">
-            <div class="book-fold"></div>
-            <h2 style="color: var(--gold); font-family: var(--font-eng);">Book of Answers</h2>
-            <div class="book-divider"></div>
-            <div class="book-content" id="book-text">答案正在浮现...</div>
-            <div class="book-divider"></div>
-            <div class="book-pg-num" id="book-pg">Pg. 1</div>
-            <button class="btn-fill" style="margin-top: 15px;" onclick="app.rollBook()">再翻一页</button>
+        <div class="deal-controls">
+            <input type="text" id="ipt-question" class="ipt-question" placeholder="请在此输入您心中的问题（选填）">
+            <button class="btn-fill" onclick="app.quickPick()">一键直接抽牌</button>
+            <button class="btn-fill" style="background: #444;" onclick="app.cancelDeal()">取消并返回</button>
         </div>
     </div>
-
-</div>
-
 <script>
 /**
  * Tarot App Core Logic
