@@ -23,8 +23,11 @@ body.light{
 html,body{height:100%;overflow:hidden}
 body{font-family:'PingFang SC','Quicksand','Noto Sans SC',system-ui,sans-serif;
   background:var(--bg);color:var(--ink);transition:background .4s,color .4s}
-#app{max-width:480px;margin:0 auto;height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
-/* NAV */
+#nav{display:none;height:auto;min-height:56px;background:var(--paper);border-top:1px solid var(--line);
+align-items:center;justify-content:space-around;flex-shrink:0;z-index:50;
+border-radius:20px 20px 0 0;
+padding:6px 0 calc(6px + env(safe-area-inset-bottom, 0px))}
+  /* NAV */
 #nav{display:none;height:64px;background:var(--paper);border-top:1px solid var(--line);
   align-items:center;justify-content:space-around;flex-shrink:0;z-index:50;
   border-radius:20px 20px 0 0}
@@ -34,7 +37,7 @@ body{font-family:'PingFang SC','Quicksand','Noto Sans SC',system-ui,sans-serif;
 .nav-i .ni{font-size:1.1rem;display:block;margin-bottom:1px}
 .nav-i.on{color:var(--gold);font-weight:700}
 /* SCREENS */
-.scr{display:none;flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:20px;-webkit-overflow-scrolling:touch}
+.scr{display:none;flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:10px;-webkit-overflow-scrolling:touch}
 .scr.on{display:flex;flex-direction:column;animation:scrIn .35s ease}
 @keyframes scrIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 /* LOGIN */
@@ -204,6 +207,22 @@ label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px}
 /* UTIL */
 .mt{margin-top:12px}.mb{margin-bottom:12px}
 .tc{text-align:center}.fw{font-weight:600}
+/* BOOK COUNTDOWN */
+.book-cd-wrap{position:absolute;inset:0;display:flex;flex-direction:column;
+align-items:center;justify-content:center;z-index:10}
+.book-cd-num{font-size:5rem;font-weight:700;color:var(--gold);
+animation:cdPop .7s cubic-bezier(.23,1,.32,1) both}
+.book-cd-label{font-size:.88rem;color:var(--muted);margin-top:8px;letter-spacing:2px}
+@keyframes cdPop{0%{transform:scale(2);opacity:0}40%{transform:scale(.9);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes flipOpen{
+0%{transform:perspective(800px) rotateY(-120deg) scale(.8);opacity:0}
+60%{transform:perspective(800px) rotateY(10deg) scale(1.02);opacity:1}
+100%{transform:perspective(800px) rotateY(0) scale(1);opacity:1}}
+.book.flip-open{animation:flipOpen .7s cubic-bezier(.23,1,.32,1) both}
+@keyframes miniFlip{
+0%{transform:perspective(600px) rotateY(90deg);opacity:0}
+100%{transform:perspective(600px) rotateY(0);opacity:1}}
+.book.mini-flip{animation:miniFlip .45s ease both}
 </style>
 </head>
 <body>
@@ -370,7 +389,11 @@ label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px}
 
 <!-- ====== BOOK OVERLAY ====== -->
 <div id="book-overlay" onclick="if(event.target===this)closeBook()">
-  <div class="book">
+  <div class="book-cd-wrap" id="book-cd" style="display:none">
+    <div class="book-cd-num" id="cd-num">3</div>
+    <div class="book-cd-label">正在翻开答案之书...</div>
+  </div>
+  <div class="book" id="book-card" style="display:none">
     <div class="pg" id="bk-pg"></div>
     <div class="btitle" id="bk-title"></div>
     <div class="btext" id="bk-text"></div>
@@ -995,15 +1018,47 @@ function renderLiuyao(){
 }
 
 // ========== BOOK ==========
-function openBook(){var p=BOOK[Math.floor(Math.random()*BOOK.length)];showBookPage(p);$('book-overlay').classList.add('on')}
-function flipBook(){var p=BOOK[Math.floor(Math.random()*BOOK.length)];showBookPage(p)}
-function showBookPage(p){$('bk-pg').textContent='第 '+(BOOK.indexOf(p)+1)+' 页';$('bk-title').textContent=p.t;$('bk-text').textContent=p.x;S._lastBook=p}
-function saveBookPage(){
-  if(!S._lastBook)return;
-  S.history.unshift({type:'book',spread:'答案之书',question:'',cards:[{name:S._lastBook.t,pos:'第'+(BOOK.indexOf(S._lastBook)+1)+'页',meaning:S._lastBook.x}],time:new Date().toLocaleString('zh-CN')});
-  saveHist();alert('已保存 ✓');
+var _bookTimer=null;
+function openBook(){
+  if(_bookTimer){clearInterval(_bookTimer);_bookTimer=null}
+  $('book-card').style.display='none';
+  $('book-cd').style.display='flex';
+  $('cd-num').textContent='3';
+  $('book-overlay').classList.add('on');
+  var count=3;
+  // 重新触发动画
+  var numEl=$('cd-num');
+  numEl.style.animation='none';numEl.offsetHeight;numEl.style.animation='';
+  _bookTimer=setInterval(function(){
+    count--;
+    if(count>0){
+      numEl.textContent=count;
+      numEl.style.animation='none';numEl.offsetHeight;
+      numEl.style.animation='cdPop .7s cubic-bezier(.23,1,.32,1) both';
+    }else{
+      clearInterval(_bookTimer);_bookTimer=null;
+      $('book-cd').style.display='none';
+      var p=BOOK[Math.floor(Math.random()*BOOK.length)];
+      showBookPage(p);
+      var card=$('book-card');
+      card.style.display='';
+      card.classList.remove('flip-open');card.offsetHeight;
+      card.classList.add('flip-open');
+    }
+  },800);
 }
-function closeBook(){$('book-overlay').classList.remove('on')}
+function flipBook(){
+  var card=$('book-card');
+  card.classList.remove('mini-flip');card.offsetHeight;
+  var p=BOOK[Math.floor(Math.random()*BOOK.length)];
+  showBookPage(p);
+  card.classList.add('mini-flip');
+}
+function closeBook(){
+  if(_bookTimer){clearInterval(_bookTimer);_bookTimer=null}
+  $('book-overlay').classList.remove('on');
+  $('book-card').classList.remove('flip-open','mini-flip');
+}
 
 // ========== HISTORY ==========
 function renderHistory(){
