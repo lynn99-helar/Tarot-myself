@@ -1,886 +1,771 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>灵性祭坛 · 视觉增强版</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
-    
-    :root {
-      --gold: #D4AF37;
-      --rose: #E55A6C;
-      --blue: #4A90E2;
-      --purple: #8E44AD;
-      --bg: linear-gradient(135deg, #F5F7FA 0%, #C3CFE2 100%);
-      --paper: rgba(255,255,255,0.25);
-      --glass: rgba(255,255,255,0.1);
-      --ink: #2C3E50;
-      --shadow: 0 8px 32px rgba(31,38,135,0.37);
-      --shadow-neon: 0 0 20px rgba(212,175,55,0.5);
-      --radius: 24px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>灵性祭坛 · 专业版</title>
+    <style>
+        /* ================= 视觉规范 ================= */
+        :root {
+            --gold: #C8A96E;
+            --rose: #C4786A;
+            --blue: #5B7FA6;
+            --bg: #F4F1EB;
+            --paper: #FDFAF4;
+            --ink: #1A1814;
+            --line: rgba(26, 24, 20, 0.1);
+            --radius: 20px;
+            --shadow: rgba(26, 24, 20, 0.15);
+        }
+        .dark-mode {
+            --bg: #111009;
+            --paper: #1A1712;
+            --ink: #EDE9E1;
+            --line: rgba(255, 255, 255, 0.1);
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0;
+            font-family: 'PingFang SC', 'Quicksand', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            transition: background 0.5s;
+        }
+        #app {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .view {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .view.active { display: flex; }
 
-    .dark-mode {
-      --bg: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-      --paper: rgba(26,32,44,0.6);
-      --glass: rgba(26,32,44,0.4);
-      --ink: #ECF0F1;
-    }
+        /* --- 通用样式 --- */
+        header { padding: 20px; text-align: left; z-index: 10; }
+        .greeting { font-size: 1.2rem; font-weight: 600; margin: 0; }
+        .date-info { font-size: 0.8rem; opacity: 0.7; margin: 4px 0 0 0; }
+        main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 90px; }
+        .btn-fill {
+            background: var(--gold);
+            color: #fff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        .btn-fill:active { transform: scale(0.97); }
+        .btn-outline {
+            background: transparent;
+            color: var(--ink);
+            border: 1px solid var(--line);
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+        .card-box {
+            background: var(--paper);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px var(--shadow);
+            border: 1px solid var(--line);
+        }
+        .subtle { opacity: 0.7; font-size: 0.9rem; }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      margin: 0; padding: 0;
-      font-family: 'Quicksand', sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      transition: all 0.4s cubic-bezier(0.23,1,0.32,1);
-      display: flex; justify-content: center; align-items: center; min-height: 100vh;
-      overflow-x: hidden;
-      backdrop-filter: blur(10px);
-    }
+        /* --- 底部导航 --- */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 480px;
+            height: 70px;
+            background: var(--paper);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px var(--shadow);
+            border-radius: 20px 20px 0 0;
+            z-index: 50;
+            border-top: 1px solid var(--line);
+        }
+        .nav-item {
+            font-size: 0.7rem;
+            text-align: center;
+            color: var(--ink);
+            opacity: 0.6;
+            cursor: pointer;
+            padding: 6px 8px;
+            transition: all 0.2s;
+        }
+        .nav-item.active { opacity: 1; color: var(--gold); font-weight: bold; }
 
-    #app-container {
-      width: 100%; max-width: 500px; height: 100vh;
-      display: flex; flex-direction: column; overflow: hidden;
-      position: relative;
-    }
+        /* --- 抽牌桌 --- */
+        #deal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .deal-header {
+            padding: 20px;
+            text-align: center;
+            background: var(--paper);
+            border-bottom: 1px solid var(--line);
+        }
+        .deal-title { margin: 0 0 8px 0; color: var(--gold); font-size: 1.1rem; }
+        .deal-count { margin: 0; font-size: 0.9rem; opacity: 0.8; }
 
-    /* 粒子背景 */
-    #particles {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1;
-    }
+        #deal-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            perspective: 1000px;
+            background: radial-gradient(circle at center, rgba(200,169,110,0.05) 0%, transparent 60%);
+        }
+        .deal-card {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(145deg, #D4AF37, #C8A96E);
+            border-radius: 10px;
+            transform-origin: bottom center;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s;
+            box-shadow: 0 6px 12px var(--shadow);
+            border: 2px solid rgba(255,255,255,0.9);
+            cursor: pointer;
+            user-select: none;
+        }
+        .deal-card::before {
+            content: "✦";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 1.5rem;
+        }
+        .deal-card.selected {
+            transform: translateX(-50%) translateY(-150px) scale(1.1) !important;
+            border-color: var(--rose);
+            box-shadow: 0 0 20px var(--rose);
+            z-index: 10;
+        }
+        .deal-card:hover {
+            transform: translateX(-50%) translateY(-20px) rotate(var(--angle)) !important;
+            z-index: 5;
+        }
 
-    header { padding: 24px 20px 16px; text-align: left; z-index: 10; backdrop-filter: blur(20px); }
-    .greeting { font-size: 1.4rem; font-weight: 700; margin: 0 0 8px 0; background: linear-gradient(45deg, var(--gold), var(--rose)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .date-info { font-size: 0.85rem; opacity: 0.8; margin: 0; }
+        .deal-footer {
+            padding: 20px;
+            text-align: center;
+            background: var(--paper);
+            border-top: 1px solid var(--line);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
 
-    main { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
+        /* --- 结果展示 --- */
+        .result-item {
+            background: var(--paper);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--line);
+        }
+        .result-title { font-weight: bold; color: var(--gold); margin-bottom: 8px; }
+        .reversed-tag { color: var(--rose); font-size: 0.8rem; margin-left: 6px; }
+        .result-meaning { font-size: 0.95rem; line-height: 1.6; color: var(--ink); }
 
-    .glass-card {
-      background: var(--glass); backdrop-filter: blur(20px); border-radius: var(--radius);
-      box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.18);
-      padding: 24px; margin-bottom: 20px; transform: translateZ(0);
-      transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
-    }
-    .glass-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        /* --- 六爻绘制 --- */
+        .yao-container {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 8px;
+            margin: 20px 0;
+            align-items: center;
+        }
+        .yao {
+            width: 100%;
+            max-width: 280px;
+            height: 10px;
+            position: relative;
+            border-radius: 5px;
+        }
+        .yao.yang { background: var(--ink); }
+        .yao.yin {
+            background:
+                linear-gradient(to right,
+                    var(--ink) 0 42%,
+                    transparent 42% 58%,
+                    var(--ink) 58% 100%);
+        }
+        .yao-mark {
+            position: absolute;
+            right: -18px;
+            top: -2px;
+            font-size: 0.7rem;
+            color: var(--rose);
+        }
 
-    .btn-magic {
-      background: linear-gradient(45deg, var(--gold), var(--rose));
-      color: white; border: none; padding: 14px 28px; border-radius: 50px;
-      font-size: 1rem; font-weight: 600; cursor: pointer; position: relative;
-      overflow: hidden; box-shadow: 0 8px 24px rgba(212,175,55,0.4);
-      transition: all 0.3s;
-    }
-    .btn-magic::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: 0.5s; }
-    .btn-magic:hover::before { left: 100%; }
-    .btn-magic:active { transform: scale(0.96); }
+        /* --- 答案之书 --- */
+        .book-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 90%;
+            max-width: 320px;
+            background: var(--paper);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+        .book-modal.show { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+        .book-cover {
+            background: linear-gradient(145deg, #8B4513, #A0522D);
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+            color: #fff;
+        }
+        .book-content {
+            padding: 20px;
+            text-align: center;
+        }
+        .book-close { margin-top: 15px; padding: 10px 20px; background: var(--gold); border: none; border-radius: 20px; color: #fff; cursor: pointer; }
 
-    /* 抽牌桌增强 */
-    #deal-wrap {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: radial-gradient(circle at center, rgba(212,175,55,0.1) 0%, transparent 70%), var(--bg);
-      z-index: 1000; display: none; flex-direction: column;
-      animation: fadeIn 0.4s;
-    }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    .pick-header { padding: 20px; text-align: center; }
-    .pick-header h3 { margin: 0; color: var(--gold); }
-    .pick-header p { margin: 10px 0 0 0; font-size: 0.9rem; opacity: 0.8; }
-
-    #d-slots {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      perspective: 1000px;
-    }
-
-    .dc {
-      position: absolute;
-      bottom: -60px;
-      left: 50%;
-      width: 90px;
-      height: 150px;
-      background: linear-gradient(145deg, #FFECB3, #D4AF37);
-      border-radius: 16px;
-      transform-origin: bottom center;
-      transition: all 0.5s cubic-bezier(0.23,1,0.32,1);
-      box-shadow: 0 12px 32px rgba(0,0,0,0.3);
-      border: 3px solid rgba(255,255,255,0.9);
-      cursor: pointer;
-      perspective: 1000px;
-      user-select: none;
-    }
-    .dc-inner { transition: transform 0.6s; transform-style: preserve-3d; height: 100%; }
-    .dc.flipped .dc-inner { transform: rotateY(180deg); }
-    .dc-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; padding: 10px; font-size: 0.8rem; text-align: center; }
-    .dc-back { background: linear-gradient(145deg, #FFECB3, #D4AF37); color: #8B6914; }
-    .dc-front { background: linear-gradient(145deg, #667eea 0%, #764ba2 100%); color: white; transform: rotateY(180deg); }
-
-    .dc.selected .dc-front { border: 2px solid var(--rose); }
-
-    /* 结果展示 */
-    .tarot-spread { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin: 20px 0; }
-    .tarot-card { animation: cardRise 0.6s cubic-bezier(0.23,1,0.32,1); }
-    @keyframes cardRise { from { opacity: 0; transform: translateY(30px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    
-    .card-result-item { background: var(--glass); padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
-    .card-result-title { font-weight: bold; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    .card-result-meaning { font-size: 0.9rem; line-height: 1.5; }
-    .reversed-tag { background: var(--rose); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
-
-    /* 导航 */
-    nav {
-      position: fixed; bottom: 0; width: 100%; max-width: 500px; height: 80px;
-      background: var(--glass); backdrop-filter: blur(20px);
-      display: flex; justify-content: space-around; align-items: center;
-      box-shadow: var(--shadow); border-radius: var(--radius) var(--radius) 0 0; z-index: 50;
-    }
-    .nav-item { font-size: 0.8rem; text-align: center; color: var(--ink); opacity: 0.7; cursor: pointer; transition: 0.3s; }
-    .nav-item.active { opacity: 1; color: var(--gold); text-shadow: 0 0 10px var(--shadow-neon); transform: scale(1.1); }
-
-    /* 其他样式 */
-    .music-toggle { position: fixed; top: 20px; right: 20px; z-index: 100; background: var(--glass); border-radius: 50%; width: 50px; height: 50px; border: none; cursor: pointer; font-size: 1.2rem; }
-    .today-fortune { animation: glow 2s infinite alternate; }
-    @keyframes glow { 0% { box-shadow: 0 0 20px rgba(212,175,55,0.3); } 100% { box-shadow: 0 0 30px rgba(212,175,55,0.6); } }
-    
-    .history-item { background: var(--paper); padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--line); }
-    .history-time { font-size: 0.75rem; opacity: 0.6; margin-bottom: 8px; }
-    .history-content { font-size: 0.9rem; }
-  </style>
+        /* --- AI 聊天 --- */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .chat-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s;
+        }
+        .chat-user { align-self: flex-end; background: var(--gold); color: #fff; border-bottom-right-radius: 4px; }
+        .chat-ai { align-self: flex-start; background: var(--paper); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+        .chat-input-area {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--line);
+        }
+        .chat-input-area input { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid var(--line); background: var(--bg); outline: none; }
+        .chat-input-area button { background: var(--gold); color: #fff; border: none; padding: 12px 20px; border-radius: 20px; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
-  <canvas id="particles"></canvas>
-  <button class="music-toggle" onclick="toggleMusic()">🎵</button>
+    <div id="app">
+        <!-- View: Login -->
+        <div id="view-login" class="view active">
+            <header>
+                <p class="date-info">欢迎来到灵性祭坛</p>
+                <h1 class="greeting">登录 / 创建账号</h1>
+            </header>
+            <main>
+                <div class="card-box">
+                    <input type="text" id="input-name" placeholder="输入你的昵称" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); margin-bottom:10px;">
+                    <input type="password" id="input-pass" placeholder="可选：设置密码" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); margin-bottom:15px;">
+                    <button class="btn-fill" onclick="login()" style="width:100%;">进入祭坛</button>
+                </div>
+                <p class="subtle" style="text-align:center; margin-top:20px;">数据保存在本地，换设备需重新登录</p>
+            </main>
+        </div>
 
-  <div id="app-container">
-    <!-- 首页 -->
-    <section id="view-home">
-      <header>
-        <p class="date-info" id="current-date"></p>
-        <h1 class="greeting" id="welcome-msg">您好</h1>
-      </header>
-      <main>
-        <div class="glass-card today-fortune">
-          <h3>今日运势</h3>
-          <p id="daily-fortune">加载中...</p>
+        <!-- View: Home -->
+        <div id="view-home" class="view">
+            <header>
+                <p class="date-info" id="home-date"></p>
+                <h1 class="greeting" id="home-greeting">加载中...</h1>
+            </header>
+            <main>
+                <div class="card-box">
+                    <h3>今日运势</h3>
+                    <div id="daily-fortune" class="subtle">今日宜：静心冥想，宜：整理思绪。今日忌：急躁行事，忌：盲目跟风。</div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <button class="btn-fill" onclick="openDealer('tarot', 'single')">每日一牌</button>
+                    <button class="btn-fill" style="background:var(--blue);" onclick="openDealer('tarot', 'three')">三牌阵</button>
+                    <button class="btn-fill" style="background:var(--rose);" onclick="openBook()">答案之书</button>
+                    <button class="btn-outline" onclick="switchView('liuyao')">古法六爻</button>
+                </div>
+                <div class="card-box">
+                    <h3>我的状态</h3>
+                    <p class="subtle">累计占卜次数: <span id="stat-count">0</span></p>
+                    <button class="btn-outline" onclick="logout()">切换账号</button>
+                </div>
+            </main>
         </div>
-        <div class="glass-card">
-          <label for="username-input">称呼</label>
-          <input id="username-input" placeholder="请输入你的名字或称呼" style="width:100%; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.3); margin-top:8px; color:var(--ink);">
-          <div style="margin-top:12px;">
-            <button class="btn-fill" onclick="saveUser()">保存称呼</button>
-          </div>
-        </div>
-        <div style="text-align:center; margin-top: 30px;">
-          <button class="btn-fill" onclick="prepareTarot()">开始塔罗占卜</button>
-          <div style="margin-top: 20px;">
-            <button class="btn-fill" style="background: var(--blue);" onclick="switchTab('liuyao')">古法六爻</button>
-          </div>
-        </div>
-      </main>
-    </section>
 
-    <!-- 塔罗 -->
-    <section id="view-tarot" style="display:none;">
-      <main>
-        <div class="glass-card">
-          <h2>塔罗三牌占卜</h2>
-          <p class="subtle">可先输入问题，再进入抽牌。默认三张牌位：过去 / 现在 / 未来。</p>
-          <textarea id="tarot-question" placeholder="请输入你想要占卜的问题" style="width:100%; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.3); margin-top:8px; min-height:80px; color:var(--ink);"></textarea>
-          <div style="margin-top:12px;" class="row">
-            <button class="btn-fill" onclick="openDealer('tarot')">进入抽牌</button>
-            <button class="btn-outline" onclick="clearTarotResult()">清空结果</button>
-          </div>
+        <!-- View: Tarot -->
+        <div id="view-tarot" class="view">
+            <header>
+                <p class="date-info">塔罗占卜</p>
+                <h1 class="greeting">请选择牌阵</h1>
+            </header>
+            <main>
+                <div class="card-box">
+                    <h3>基础牌阵</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <button class="btn-outline" onclick="openDealer('tarot', 'single')">单牌指引</button>
+                        <button class="btn-outline" onclick="openDealer('tarot', 'three')">过去-现在-未来</button>
+                        <button class="btn-outline" onclick="openDealer('tarot', 'yesno')">是否决策</button>
+                    </div>
+                </div>
+                <div class="card-box">
+                    <h3>进阶牌阵</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <button class="btn-outline" onclick="openDealer('tarot', 'celtic')">凯尔特十字(10)</button>
+                        <button class="btn-outline" onclick="openDealer('tarot', 'love')">关系和谐</button>
+                        <button class="btn-outline" onclick="openDealer('tarot', 'career')">事业规划</button>
+                    </div>
+                </div>
+                <div class="card-box">
+                    <h3>运势牌阵</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <button class="btn-outline" onclick="openDealer('tarot', 'daily')">日运势</button>
+                        <button class="btn-outline" onclick="openDealer('tarot', 'weekly')">周运势</button>
+                        <button class="btn-outline" onclick="openDealer('tarot', 'monthly')">月运势</button>
+                    </div>
+                </div>
+            </main>
         </div>
-        <div id="tarot-result" class="glass-card">
-          <div class="empty">尚未完成抽牌。</div>
-        </div>
-      </main>
-    </section>
 
-    <!-- 六爻 -->
-    <section id="view-liuyao" style="display:none;">
-      <main>
-        <div class="glass-card">
-          <h2>古法六爻金钱卦</h2>
-          <p class="subtle">每次点击掷钱生成一爻，共 6 次成卦。自下而上为初爻至上爻。</p>
-          <textarea id="liuyao-question" placeholder="请输入你想问的问题" style="width:100%; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.3); margin-top:8px; min-height:60px; color:var(--ink);"></textarea>
-          <div class="liuyao-canvas" id="yao-container" style="margin:20px 0;"></div>
-          <div class="row">
-            <button class="btn-fill" onclick="tossCoins()">掷钱</button>
-            <button class="btn-outline" onclick="resetLiuyao()">重新起卦</button>
-          </div>
+        <!-- View: Liuyao -->
+        <div id="view-liuyao" class="view">
+            <header>
+                <p class="date-info">古法六爻金钱卦</p>
+                <h1 class="greeting">请静心思考问题</h1>
+            </header>
+            <main>
+                <div class="card-box">
+                    <textarea id="liuyao-question" placeholder="在此输入你想占卜的问题..." style="width:100%; min-height:80px; padding:12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); resize:none; outline:none;"></textarea>
+                    <button class="btn-fill" onclick="startLiuyao()" style="width:100%; margin-top:15px;">开始起卦</button>
+                </div>
+                <div class="card-box">
+                    <h3>当前卦象</h3>
+                    <div class="yao-container" id="yao-display"></div>
+                    <div id="liuyao-result" class="subtle">尚未起卦，请点击上方按钮开始掷钱。</div>
+                </div>
+            </main>
         </div>
-        <div id="liuyao-result" class="glass-card">
-          <div class="empty">尚未成卦。</div>
-        </div>
-      </main>
-    </section>
 
-    <!-- 记录 -->
-    <section id="view-history" style="display:none;">
-      <main>
-        <div class="glass-card">
-          <div class="row" style="justify-content: space-between; align-items:center;">
-            <h2 style="margin-bottom:0;">记录</h2>
-            <button class="btn-outline" onclick="clearHistory()">清空记录</button>
-          </div>
+        <!-- View: History -->
+        <div id="view-history" class="view">
+            <header>
+                <p class="date-info">历史记录</p>
+                <h1 class="greeting">我的占卜日志</h1>
+            </header>
+            <main id="history-list">
+                <div class="card-box">
+                    <p class="subtle" style="text-align:center;">暂无记录，进行一次占卜后将显示在这里。</p>
+                </div>
+            </main>
         </div>
-        <div id="history-list"></div>
-      </main>
-    </section>
 
-    <!-- 抽牌桌 -->
-    <div id="deal-wrap">
-      <div class="pick-header">
-        <h3 id="pick-title">请静心思考你的问题，抽取 3 张牌</h3>
-        <p id="pick-count">已选择: 0/3</p>
-      </div>
-      <div id="d-slots"></div>
-      <div style="padding: 20px; text-align: center;">
-        <button class="btn-fill" onclick="confirmSelection()">确认解读</button>
-        <button onclick="closeDealer()" style="background:none; border:none; color:var(--ink); margin-left:10px; font-size:1rem; cursor:pointer;">取消</button>
-      </div>
+        <!-- View: Settings -->
+        <div id="view-settings" class="view">
+            <header>
+                <p class="date-info">设置</p>
+                <h1 class="greeting">系统配置</h1>
+            </header>
+            <main>
+                <div class="card-box">
+                    <h3>外观</h3>
+                    <button class="btn-outline" onclick="toggleTheme()" style="width:100%; text-align:left;">
+                        切换主题
+                        <span id="theme-status" style="float:right;"></span>
+                    </button>
+                </div>
+                <div class="card-box">
+                    <h3>数据</h3>
+                    <button class="btn-outline" onclick="clearAllData()" style="width:100%; text-align:left; color:var(--rose);">
+                        清空所有数据 (不可恢复)
+                    </button>
+                </div>
+            </main>
+        </div>
+
+        <!-- 抽牌桌 Overlay -->
+        <div id="deal-overlay">
+            <div class="deal-header">
+                <h3 class="deal-title" id="deal-title">请静心思考，点击选牌</h3>
+                <p class="deal-count" id="deal-count">已选择: 0/3</p>
+            </div>
+            <div id="deal-area"></div>
+            <div class="deal-footer">
+                <button class="btn-fill" onclick="confirmDeal()">确认解读</button>
+                <button class="btn-outline" onclick="closeDealer()">取消</button>
+            </div>
+        </div>
+
+        <!-- 答案之书 Modal -->
+        <div id="book-modal" class="book-modal">
+            <div class="book-cover">
+                <h2 style="margin:0;">答案之书</h2>
+                <p style="margin:5px 0 0 0; opacity:0.8;">第 <span id="book-page">1</span> 页</p>
+            </div>
+            <div class="book-content">
+                <h3 id="book-title" style="margin-top:0; color:var(--gold);"></h3>
+                <p id="book-text" style="line-height:1.8;"></p>
+                <button class="book-close" onclick="closeBook()">关闭</button>
+                <button class="btn-fill" onclick="openBook()" style="margin-top:10px; width:100%;">再翻一页</button>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <nav>
+            <div class="nav-item active" onclick="switchView('home')">首页</div>
+            <div class="nav-item" onclick="switchView('tarot')">塔罗</div>
+            <div class="nav-item" onclick="switchView('liuyao')">六爻</div>
+            <div class="nav-item" onclick="switchView('history')">记录</div>
+            <div class="nav-item" onclick="switchView('settings')">更多</div>
+        </nav>
     </div>
 
-    <!-- 导航栏 -->
-    <nav>
-      <div class="nav-item active" data-view="home" onclick="switchTab('home')">首页</div>
-      <div class="nav-item" data-view="tarot" onclick="switchTab('tarot')">塔罗</div>
-      <div class="nav-item" data-view="liuyao" onclick="switchTab('liuyao')">六爻</div>
-      <div class="nav-item" data-view="history" onclick="switchTab('history')">记录</div>
-      <div class="nav-item" onclick="toggleTheme()">主题</div>
-    </nav>
-  </div>
+    <script>
+        // ================= 数据库 =================
+        // 塔罗牌数据 (精简版，实际应包含78张完整含义)
+        const TAROT_DECK = [];
+        const SUITS = ['权杖', '圣杯', '宝剑', '星币'];
+        const MAJORS = [
+            {name: '愚者', meaning: '新的开始、冒险、信任直觉、纯真'}, {name: '魔术师', meaning: '行动力、创造、显化、资源整合'},
+            {name: '女祭司', meaning: '直觉、内在智慧、神秘、潜意识'}, {name: '女皇', meaning: '丰盛、滋养、创造力、母性'},
+            {name: '皇帝', meaning: '权威、秩序、掌控、结构'}, {name: '教皇', meaning: '传统、规范、信念、指导'},
+            {name: '恋人', meaning: '选择、联结、和谐、关系'}, {name: '战车', meaning: '意志、胜利、推进、克服障碍'},
+            {name: '力量', meaning: '耐心、勇气、内在掌控、温柔'}, {name: '隐士', meaning: '独处、反思、内在指引、寻找真相'},
+            {name: '命运之轮', meaning: '转机、周期、机会、命运'}, {name: '正义', meaning: '平衡、因果、公正、决策'},
+            {name: '倒吊人', meaning: '等待、牺牲、换个角度、静止'}, {name: '死神', meaning: '结束、蜕变、彻底的改变、重生'},
+            {name: '节制', meaning: '调和、适度、耐心、修复'}, {name: '恶魔', meaning: '执着、束缚、欲望、物质主义'},
+            {name: '高塔', meaning: '突变、崩塌、觉醒、真相揭露'}, {name: '星星', meaning: '希望、疗愈、愿景、信心'},
+            {name: '月亮', meaning: '潜意识、不安、幻象、迷惑'}, {name: '太阳', meaning: '成功、喜悦、清晰、活力'},
+            {name: '审判', meaning: '觉醒、召唤、复盘、救赎'}, {name: '世界', meaning: '完成、圆满、整合、达成'}
+        ];
+        MAJORS.forEach(c => TAROT_DECK.push({type: 'major', ...c}));
+        SUITS.forEach(suit => {
+            ['一','二','三','四','五','六','七','八','九','十','侍从','骑士','王后','国王'].forEach((num, i) => {
+                TAROT_DECK.push({type: 'minor', suit: suit, name: `${suit}${num}`, meaning: `${suit}的${num}，代表${suit}元素在${i+1}阶段的状态。`});
+            });
+        });
 
-  <script>
-    // ========== 1. 数据库 ==========
-    // 塔罗 78 张完整数据
-    const TAROT_DECK = [
-      // 大阿卡那 22 张
-      { id: 0, name: "愚者", type: "major", upright: "新的开始、冒险、自由、信任直觉、纯真", reversed: "冲动、方向不明、轻率、缺乏计划" },
-      { id: 1, name: "魔术师", type: "major", upright: "行动力、创造、资源整合、显化、专注", reversed: "迟疑、操控、资源错配、缺乏技巧" },
-      { id: 2, name: "女祭司", type: "major", upright: "直觉、内在智慧、沉静观察、神秘感", reversed: "封闭、迟疑、忽视内心、表面文章" },
-      { id: 3, name: "女皇", type: "major", upright: "丰盛、滋养、关系成长、创造力、舒适", reversed: "过度依赖、放纵、停滞、创作受阻" },
-      { id: 4, name: "皇帝", type: "major", upright: "秩序、掌控、责任、结构、权威", reversed: "僵化、控制欲、压抑、缺乏自律" },
-      { id: 5, name: "教皇", type: "major", upright: "传统、学习、规范、信念、指导", reversed: "教条、束缚、质疑旧框架、叛逆" },
-      { id: 6, name: "恋人", type: "major", upright: "选择、关系、联结、价值一致、和谐", reversed: "分歧、摇摆、不一致、关系危机" },
-      { id: 7, name: "战车", type: "major", upright: "推进、意志、突破、胜利、决心", reversed: "失控、阻力、方向偏离、缺乏方向" },
-      { id: 8, name: "力量", type: "major", upright: "耐心、温柔掌控、内在勇气、同情心", reversed: "焦躁、软弱、内耗、失控" },
-      { id: 9, name: "隐士", type: "major", upright: "独处、反思、寻找真相、内在指引", reversed: "封闭、逃避、过度孤立、抗拒建议" },
-      { id: 10, name: "命运之轮", type: "major", upright: "转机、周期变化、机会来临、命运", reversed: "停滞、反复、时机未到、厄运" },
-      { id: 11, name: "正义", type: "major", upright: "平衡、判断、因果、理性、公正", reversed: "失衡、偏见、拖延结果、不公" },
-      { id: 12, name: "倒吊人", type: "major", upright: "等待、换角度、暂停中的领悟、牺牲", reversed: "僵局、无谓牺牲、不肯转念、停滞" },
-      { id: 13, name: "死神", type: "major", upright: "结束、蜕变、旧局退场、彻底的改变", reversed: "抗拒改变、拖着不放、无法放手" },
-      { id: 14, name: "节制", type: "major", upright: "调和、修复、节奏稳定、适度", reversed: "失衡、过度、步调紊乱、缺乏耐心" },
-      { id: 15, name: "恶魔", type: "major", upright: "执着、欲望、束缚、上瘾模式、物质主义", reversed: "看见束缚、开始挣脱、释放自我" },
-      { id: 16, name: "高塔", type: "major", upright: "突变、真相揭露、结构崩塌、突然的觉醒", reversed: "延迟爆发、强撑旧局、灾难降级" },
-      { id: 17, name: "星星", type: "major", upright: "希望、疗愈、愿景、信心、灵感", reversed: "失望、信念不足、迷茫、悲观" },
-      { id: 18, name: "月亮", type: "major", upright: "潜意识、不安、迷雾、感受强烈、幻觉", reversed: "真相渐明、情绪缓解、恐惧消散" },
-      { id: 19, name: "太阳", type: "major", upright: "清晰、成功、喜悦、生命力、活力", reversed: "短暂阴影、迟来的明朗、过度自信" },
-      { id: 20, name: "审判", type: "major", upright: "觉醒、召唤、复盘后重启、救赎", reversed: "犹豫、无法放下过去、自我批评" },
-      { id: 21, name: "世界", type: "major", upright: "完成、整合、圆满、阶段达成、旅行", reversed: "未完成、拖尾、差最后一步、缺乏闭环" },
-      // 小阿卡那 权杖 14 张
-      { id: 22, name: "权杖一", type: "wands", upright: "新机会、创意、行动、启动", reversed: "延迟、缺乏方向、计划受阻" },
-      { id: 23, name: "权杖二", type: "wands", upright: "规划、未来展望、决定、合作", reversed: "犹豫、缺乏规划、个人主义" },
-      { id: 24, name: "权杖三", type: "wands", upright: "扩展、远见、团队合作、成果", reversed: "延迟、缺乏支持、视野狭窄" },
-      { id: 25, name: "权杖四", type: "wands", upright: "庆祝、和谐、家庭、稳定", reversed: "不和谐、庆祝推迟、家庭问题" },
-      { id: 26, name: "权杖五", type: "wands", upright: "竞争、冲突、分歧、挑战", reversed: "避免冲突、解决分歧、妥协" },
-      { id: 27, name: "权杖六", type: "wands", upright: "胜利、公众认可、成功、自信", reversed: "失败、自卑、公众批评" },
-      { id: 28, name: "权杖七", type: "wands", upright: "挑战、防御、坚持立场、勇气", reversed: "放弃、被压倒、缺乏信心" },
-      { id: 29, name: "权杖八", type: "wands", upright: "快速行动、进展、旅行、迅速", reversed: "延误、挫折、缓慢进展" },
-      { id: 30, name: "权杖九", type: "wands", upright: "韧性、坚持、最后的障碍、防御", reversed: "疲惫、放弃、怀疑" },
-      { id: 31, name: "权杖十", type: "wands", upright: "负担、责任、压力、完成", reversed: "释放负担、分担责任、拖延" },
-      { id: 32, name: "权杖侍从", type: "wands", upright: "探索、热情、发现、新消息", reversed: "缺乏方向、拖延、坏消息" },
-      { id: 33, name: "权杖骑士", type: "wands", upright: "行动、冒险、能量、激情", reversed: "鲁莽、延迟、挫折" },
-      { id: 34, name: "权杖王后", type: "wands", upright: "自信、独立、社交、温暖", reversed: "自私、嫉妒、愤怒" },
-      { id: 35, name: "权杖国王", type: "wands", upright: "领导力、远见、商业、荣誉", reversed: "冲动、暴躁、高期望" },
-      // 小阿卡那 圣杯 14 张
-      { id: 36, name: "圣杯一", type: "cups", upright: "新感情、直觉、情感开始", reversed: "情感阻塞、压抑感情" },
-      { id: 37, name: "圣杯二", type: "cups", upright: "伙伴关系、爱情、和谐、吸引", reversed: "不平衡、关系问题、分离" },
-      { id: 38, name: "圣杯三", type: "cups", upright: "庆祝、友谊、团队、社交", reversed: "孤立、过度放纵、流言蜚语" },
-      { id: 39, name: "圣杯四", type: "cups", upright: "冷漠、沉思、错失机会", reversed: "新动机、重新评估、接受" },
-      { id: 40, name: "圣杯五", type: "cups", upright: "遗憾、失望、悲伤、关注负面", reversed: "接受、原谅、继续前行" },
-      { id: 41, name: "圣杯六", type: "cups", upright: "怀旧、童年、纯真、旧情复燃", reversed: "沉溺过去、缺乏成长" },
-      { id: 42, name: "圣杯七", type: "cups", upright: "幻想、选择、机会、空想", reversed: "现实检验、做决定、缺乏目的" },
-      { id: 43, name: "圣杯八", type: "cups", upright: "放弃、失望、转身离开、追求更高", reversed: "逃避、无法放手、害怕改变" },
-      { id: 44, name: "圣杯九", type: "cups", upright: "满足、愿望实现、享乐、奢华", reversed: "贪婪、物质主义、不满足" },
-      { id: 45, name: "圣杯十", type: "cups", upright: "家庭幸福、圆满、情感满足", reversed: "家庭不和、价值观冲突" },
-      { id: 46, name: "圣杯侍从", type: "cups", upright: "创意、直觉、情感信息、新感情", reversed: "情感不成熟、创作阻碍" },
-      { id: 47, name: "圣杯骑士", type: "cups", upright: "浪漫、魅力、想象力、情感提议", reversed: "情绪化、嫉妒、虚伪" },
-      { id: 48, name: "圣杯王后", type: "cups", upright: "同情、关怀、直觉、情感安全", reversed: "情感不安全、依赖、操纵" },
-      { id: 49, name: "圣杯国王", type: "cups", upright: "外交、明智、情感平衡、顾问", reversed: "情绪化、操纵、情感压抑" },
-      // 小阿卡那 宝剑 14 张
-      { id: 50, name: "宝剑一", type: "swords", upright: "新想法、清晰、突破、真相", reversed: "混乱、缺乏清晰度、错误决定" },
-      { id: 51, name: "宝剑二", type: "swords", upright: "艰难决定、僵局、回避、平衡", reversed: "优柔寡断、缺乏信息、过度思考" },
-      { id: 52, name: "宝剑三", type: "swords", upright: "心碎、悲伤、痛苦、分离", reversed: "恢复、原谅、释放痛苦" },
-      { id: 53, name: "宝剑四", type: "swords", upright: "休息、恢复、沉思、静修", reversed: "精疲力竭、活动恢复、警惕" },
-      { id: 54, name: "宝剑五", type: "swords", upright: "冲突、失败、背叛、空洞的胜利", reversed: "和解、放下怨恨、学习教训" },
-      { id: 55, name: "宝剑六", type: "swords", upright: "过渡、离开、搬迁、解脱", reversed: "抗拒改变、未完成的过渡" },
-      { id: 56, name: "宝剑七", type: "swords", upright: "欺骗、策略、偷窃、逃避", reversed: "坦白、自我欺骗、被抓" },
-      { id: 57, name: "宝剑八", type: "swords", upright: "束缚、受限、负面思维、受害者", reversed: "自我释放、新视角、自由" },
-      { id: 58, name: "宝剑九", type: "swords", upright: "焦虑、担忧、恐惧、噩梦", reversed: "内心平静、释放焦虑、开放" },
-      { id: 59, name: "宝剑十", type: "swords", upright: "背叛、危机、结束、崩溃", reversed: "恢复、抵抗、痛苦的结束" },
-      { id: 60, name: "宝剑侍从", type: "swords", upright: "好奇、沟通、新想法、警惕", reversed: "欺骗、谣言、沟通不畅" },
-      { id: 61, name: "宝剑骑士", type: "swords", upright: "行动、野心、快速思维、直接", reversed: "鲁莽、缺乏方向、散漫" },
-      { id: 62, name: "宝剑王后", type: "swords", upright: "独立、智慧、清晰、直接", reversed: "冷漠、残酷、多疑" },
-      { id: 63, name: "宝剑国王", type: "swords", upright: "权威、智力、真理、领导", reversed: "暴君、操纵、滥用权力" },
-      // 小阿卡那 星币 14 张
-      { id: 64, name: "星币一", type: "pentacles", upright: "新财务机会、繁荣、显化", reversed: "错失机会、计划不周、贪婪" },
-      { id: 65, name: "星币二", type: "pentacles", upright: "平衡、适应性、时间管理、优先级", reversed: "失衡、压力过大、混乱" },
-      { id: 66, name: "星币三", type: "pentacles", upright: "团队合作、学习、实现、技能", reversed: "缺乏团队合作、平庸、缺乏努力" },
-      { id: 67, name: "星币四", type: "pentacles", upright: "节俭、安全、控制、稳定", reversed: "贪婪、物质主义、浪费" },
-      { id: 68, name: "星币五", type: "pentacles", upright: "贫困、损失、孤立、担忧", reversed: "恢复、资源改善、重新评估" },
-      { id: 69, name: "星币六", type: "pentacles", upright: "慷慨、分享、平衡、接受", reversed: "自私、债务、不平等的给予" },
-      { id: 70, name: "星币七", type: "pentacles", upright: "耐心、投资、回报、评估", reversed: "缺乏耐心、无回报、徒劳" },
-      { id: 71, name: "星币八", type: "pentacles", upright: "技艺、勤奋、专业、掌握", reversed: "缺乏野心、低质量、完美主义" },
-      { id: 72, name: "星币九", type: "pentacles", upright: "奢华、独立、成就、财务自由", reversed: "依赖、过度工作、物质主义" },
-      { id: 73, name: "星币十", type: "pentacles", upright: "财富、传承、家庭、长期成功", reversed: "财务失败、家庭问题、短期关注" },
-      { id: 74, name: "星币侍从", type: "pentacles", upright: "机会、学习、实践、新工作", reversed: "缺乏进步、懒惰、拖延" },
-      { id: 75, name: "星币骑士", type: "pentacles", upright: "责任、勤奋、效率、常规", reversed: "懒惰、停滞、无聊" },
-      { id: 76, name: "星币王后", type: "pentacles", upright: "养育、务实、丰盛、慷慨", reversed: "工作狂、忽视家庭、财务不安全" },
-      { id: 77, name: "星币国王", type: "pentacles", upright: "财富、商业、领导、安全", reversed: "贪婪、腐败、沉迷金钱" }
-    ];
-
-    // 64卦数据 (卦辞+爻辞)
-    // 注意：由于字符限制，此处仅展示部分卦的完整数据结构，实际应用中可替换为完整JSON
-    // 以下包含所有卦名和二进制编码，以及主要卦辞
-    const GUA_DATA = {
-      "乾为天": { binary: "111111", judgment: "元亨利贞。", lines: ["初九：潜龙勿用。", "九二：见龙在田，利见大人。", "九三：君子终日乾乾，夕惕若，厉无咎。", "九四：或跃在渊，无咎。", "九五：飞龙在天，利见大人。", "上九：亢龙有悔。"] },
-      "坤为地": { binary: "000000", judgment: "元亨，利牝马之贞。君子有攸往，先迷后得主，利西南得朋，东北丧朋。安贞吉。", lines: ["初六：履霜，坚冰至。", "六二：直，方，大，不习无不利。", "六三：含章可贞，或从王事，无成有终。", "六四：括囊，无咎无誉。", "六五：黄裳，元吉。", "上六：龙战于野，其血玄黄。"] },
-      "水雷屯": { binary: "100010", judgment: "元亨利贞，勿用有攸往，利建侯。", lines: ["初九：磐桓，利居贞，利建侯。", "六二：屯如邅如，乘马班如，匪寇婚媾，女子贞不字，十年乃字。", "六三：即鹿无虞，惟入于林中，君子几不如舍，往吝。", "六四：乘马班如，求婚媾，往吉，无不利。", "九五：屯其膏，小贞吉，大贞凶。", "上六：乘马班如，泣血涟如。"] },
-      "山水蒙": { binary: "010001", judgment: "亨。匪我求童蒙，童蒙求我。初筮告，再三渎，渎则不告。利贞。", lines: ["初六：发蒙，利用刑人，用说桎梏，以往吝。", "九二：包蒙吉，纳妇吉，子克家。", "六三：勿用取女，见金夫，不有躬，无攸利。", "六四：困蒙，吝。", "六五：童蒙，吉。", "上九：击蒙，不利为寇，利御寇。"] },
-      "水天需": { binary: "111010", judgment: "有孚，光亨，贞吉，利涉大川。", lines: ["初九：需于郊，利用恒，无咎。", "九二：需于沙，小有言，终吉。", "九三：需于泥，致寇至。", "六四：需于血，出自穴。", "九五：需于酒食，贞吉。", "上六：入于穴，有不速之客三人来，敬之终吉。"] },
-      "天水讼": { binary: "010111", judgment: "有孚，窒惕，中吉，终凶，利见大人，不利涉大川。", lines: ["初六：不永所事，小有言，终吉。", "九二：不克讼，归而逋，其邑人三百户，无眚。", "六三：食旧德，贞厉，终吉，或从王事，无成。", "九四：不克讼，复即命，渝安贞，吉。", "九五：讼元吉。", "上九：或锡之鞶带，终朝三褫之。"] },
-      // ... 此处省略其余58卦的详细爻辞以节省篇幅，实际使用时请补全 ...
-      // 以下为剩余卦名和编码，确保逻辑运行
-      "地水师": { binary: "010000", judgment: "师，贞，丈人，吉无咎。", lines: ["初六：师出以律，否臧凶。", "九二：在师中吉，无咎，王三锡命。", "六三：师或舆尸，凶。", "六四：师左次，无咎。", "六五：田有禽，利执言，无咎。长子帅师，弟子舆尸，贞凶。", "上六：大君有命，开国承家，小人勿用。"] },
-      "水地比": { binary: "000010", judgment: "比，吉，原筮元永贞，无咎，不宁方来，后夫凶。", lines: ["初六：有孚比之，无咎，有孚盈缶，终来有他，吉。", "六二：比之自内，贞吉。", "六三：比之匪人。", "六四：外比之，贞吉。", "九五：显比，王用三驱，失前禽，邑人不诫，吉。", "上六：比之无首，凶。"] },
-      // ... 请在此处补充完整的 64 卦数据 ...
-      // 为演示完整性，这里用一个通用生成函数补全剩余数据结构
-    };
-    
-    // 自动补全剩余卦数据 (简化版，仅含卦名和编码，用于逻辑运行)
-    const GUA_NAMES = ["乾为天","坤为地","水雷屯","山水蒙","水天需","天水讼","地水师","水地比","风天小畜","天泽履","地天泰","天地否","天火同人","火天大有","地山谦","雷地豫","泽雷随","山风蛊","地泽临","风地观","火雷噬嗑","山火贲","山地剥","地雷复","天雷无妄","山天大畜","山雷颐","泽风大过","坎为水","离为火","泽山咸","雷风恒","天山遁","雷天大壮","火地晋","地火明夷","风火家人","火泽睽","水山蹇","雷水解","山泽损","风雷益","泽天夬","天风姤","泽地萃","地风升","泽水困","水风井","泽火革","火风鼎","震为雷","艮为山","风山渐","雷泽归妹","雷火丰","火山旅","巽为风","兑为泽","风水涣","水泽节","风泽中孚","雷山小过","水火既济","火水未济"];
-    const GUA_BIN = ["111111","000000","100010","010001","111010","010111","010000","000010","111011","110111","111000","000111","101111","111101","001000","000100","100110","011001","110000","000011","100101","101001","000001","100000","100111","111001","100001","011110","010010","101101","001110","011100","001111","111100","000101","101000","101011","110101","001010","010100","110001","100011","111110","011111","000110","011000","010110","011010","101110","011101","100100","001001","001011","110100","110101","101100","011011","110110","010011","110010","110011","001100","101010","010101"];
-    
-    GUA_NAMES.forEach((name, i) => {
-      if (!GUA_DATA[name]) {
-        GUA_DATA[name] = {
-          binary: GUA_BIN[i],
-          judgment: "（此卦辞待补充）",
-          lines: ["初爻：...", "二爻：...", "三爻：...", "四爻：...", "五爻：...", "上爻：..."]
+        // 64卦数据 (精简版，包含卦名和编码)
+        const GUA_MAP = {
+            "111111": {name:"乾为天", judgment:"元亨利贞，自强不息。"}, "000000": {name:"坤为地", judgment:"元亨，利牝马之贞。"},
+            "100010": {name:"水雷屯", judgment:"元亨利贞，勿用有攸往。"}, "010001": {name:"山水蒙", judgment:"亨，匪我求童蒙。"},
+            // ...此处为节省篇幅省略完整数据，实际项目中应补全...
         };
-      }
-    });
+        // 自动补全缺失卦名
+        const ALL_GUA_NAMES = ["乾为天","坤为地","水雷屯","山水蒙","水天需","天水讼","地水师","水地比","风天小畜","天泽履","地天泰","天地否","天火同人","火天大有","地山谦","雷地豫","泽雷随","山风蛊","地泽临","风地观","火雷噬嗑","山火贲","山地剥","地雷复","天雷无妄","山天大畜","山雷颐","泽风大过","坎为水","离为火","泽山咸","雷风恒","天山遁","雷天大壮","火地晋","地火明夷","风火家人","火泽睽","水山蹇","雷水解","山泽损","风雷益","泽天夬","天风姤","泽地萃","地风升","泽水困","水风井","泽火革","火风鼎","震为雷","艮为山","风山渐","雷泽归妹","雷火丰","火山旅","巽为风","兑为泽","风水涣","水泽节","风泽中孚","雷山小过","水火既济","火水未济"];
+        const ALL_GUA_BIN = ["111111","000000","100010","010001","111010","010111","010000","000010","111011","110111","111000","000111","101111","111101","001000","000100","100110","011001","110000","000011","100101","101001","000001","100000","100111","111001","100001","011110","010010","101101","001110","011100","001111","111100","000101","101000","101011","110101","001010","010100","110001","100011","111110","011111","000110","011000","010110","011010","101110","011101","100100","001001","001011","110100","110101","101100","011011","110110","010011","110010","110011","001100","101010","010101"];
+        ALL_GUA_NAMES.forEach((n,i) => { if(!GUA_MAP[ALL_GUA_BIN[i]]) GUA_MAP[ALL_GUA_BIN[i]] = {name:n, judgment:"卦辞待补充。"}; });
 
-    // ========== 2. 状态管理 ==========
-    const state = {
-      user: '访客',
-      theme: 'light',
-      pickedCards: [],
-      pickedCardData: [],
-      maxPick: 3,
-      currentYao: [],
-      currentDealerType: null
-    };
+        // 答案之书内容
+        const BOOK_CONTENT = [
+            {title:"初心", text:"凡事开头难，但最关键的一步就是迈出第一步。不要担心结果，专注于当下的行动。"},
+            {title:"耐心", text:"万事皆有定数，急于求成往往适得其反。保持耐心，等待花开。"},
+            {title:"选择", text:"你现在的处境是你过去选择的结果。未来的路，掌握在你自己手中。"},
+            {title:"放手", text:"有些东西，失去了才知道珍惜；有些东西，只有放手才能得到新的开始。"},
+            {title:"信任", text:"相信你的直觉，它是你内在最真实的声音。不要让外界的噪音干扰你的判断。"},
+            // ...可扩展至36条
+        ];
+        while(BOOK_CONTENT.length < 36) BOOK_CONTENT.push({title:"空白", text:"这一页是留给你自己书写的。你的命运由你自己定义。"});
 
-    // ========== 3. 核心逻辑 ==========
-    
-    // 初始化
-    function init() {
-      loadUser();
-      loadTheme();
-      updateTime();
-      renderHistory();
-      getDailyFortune();
-      initParticles();
-      setInterval(updateTime, 60000);
-    }
-
-    // 粒子特效
-    function initParticles() {
-      const canvas = document.getElementById('particles');
-      const ctx = canvas.getContext('2d');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const particles = [];
-      const numParticles = 50;
-      
-      for (let i = 0; i < numParticles; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: Math.random() * 0.5 + 0.5,
-          life: Math.random() * 0.5 + 0.5
-        });
-      }
-      
-      function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.life * 2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(212,175,55,${p.life})`;
-          ctx.fill();
-          p.x += p.vx; 
-          p.y -= p.vy; 
-          p.life -= 0.005;
-          if (p.y < 0 || p.life < 0) {
-            p.y = canvas.height; 
-            p.x = Math.random() * canvas.width; 
-            p.life = 1;
-          }
-        });
-        requestAnimationFrame(animate);
-      }
-      animate();
-    }
-
-    // 时间更新
-    function updateTime() {
-      const now = new Date();
-      const hours = now.getHours();
-      let greet = "深夜好";
-      if (hours >= 5 && hours < 12) greet = "早上好";
-      else if (hours >= 12 && hours < 18) greet = "下午好";
-      else if (hours >= 18 && hours < 23) greet = "晚上好";
-      
-      document.getElementById('welcome-msg').innerText = `${greet}，${state.user}`;
-      document.getElementById('current-date').innerText = now.toLocaleDateString("zh-CN", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-    }
-
-    // 今日运势
-    function getDailyFortune() {
-      const fortunes = [
-        "今日能量充沛，顺势而为，适合启动新计划。",
-        "静心观察，机会自来，不必强求。",
-        "内在平衡，外在顺遂，人际关系和谐。",
-        "保持耐心，等待时机，切勿冲动。",
-        "财运平稳，适合理财规划，避免投机。",
-        "感情运势上升，适合表达心意，增进感情。"
-      ];
-      document.getElementById('daily-fortune').textContent = fortunes[Math.floor(Math.random() * fortunes.length)];
-    }
-
-    // 用户管理
-    function saveUser() {
-      const val = document.getElementById("username-input").value.trim();
-      state.user = val || "访客";
-      localStorage.setItem("spirit_altar_user", state.user);
-      updateTime();
-      vibrate(10);
-      alert("称呼已保存");
-    }
-    function loadUser() {
-      const saved = localStorage.getItem("spirit_altar_user");
-      if (saved) state.user = saved;
-      document.getElementById("username-input").value = state.user === "访客" ? "" : state.user;
-    }
-
-    // 主题切换
-    function loadTheme() {
-      const savedTheme = localStorage.getItem("spirit_altar_theme");
-      if (savedTheme === "dark") {
-        document.body.classList.add("dark-mode");
-        state.theme = "dark";
-      }
-    }
-    function toggleTheme() {
-      document.body.classList.toggle("dark-mode");
-      state.theme = document.body.classList.contains("dark-mode") ? "dark" : "light";
-      localStorage.setItem("spirit_altar_theme", state.theme);
-      vibrate(50);
-    }
-
-    // 页面切换
-    function switchTab(view) {
-      document.querySelectorAll("section").forEach(s => s.style.display = "none");
-      document.getElementById(`view-${view}`).style.display = "block";
-      document.querySelectorAll(".nav-item[data-view]").forEach(i => {
-        i.classList.toggle("active", i.dataset.view === view);
-      });
-      vibrate(5);
-    }
-
-    // ========== 塔罗逻辑 ==========
-    function prepareTarot() {
-      switchTab("tarot");
-    }
-
-    function openDealer(type) {
-      state.currentDealerType = type;
-      state.pickedCards = [];
-      state.pickedCardData = [];
-      document.getElementById("pick-count").innerText = `已选择: 0/${state.maxPick}`;
-      const wrap = document.getElementById("deal-wrap");
-      const slot = document.getElementById("d-slots");
-      wrap.style.display = "flex";
-      slot.innerHTML = "";
-      
-      const totalCards = TAROT_DECK.length;
-      const radius = 220;
-      const startAngle = -55;
-      const endAngle = 55;
-      const step = (endAngle - startAngle) / (totalCards - 1);
-
-      for (let i = 0; i < totalCards; i++) {
-        const angle = startAngle + (i * step);
-        const card = document.createElement("div");
-        card.className = "dc";
-        card.style.setProperty("--angle", `${angle}deg`);
-        card.style.transform = `translateX(-50%) rotate(${angle}deg) translateY(-${radius}px)`;
-        card.dataset.index = i;
-        card.onclick = () => selectCard(card);
-        slot.appendChild(card);
-      }
-    }
-
-    function selectCard(el) {
-      if (el.classList.contains("selected")) return;
-      if (state.pickedCards.length >= state.maxPick) return;
-      if (navigator.vibrate) navigator.vibrate(20);
-
-      el.classList.add("selected");
-      const idx = parseInt(el.dataset.index);
-      state.pickedCards.push(idx);
-      document.getElementById("pick-count").innerText = `已选择: ${state.pickedCards.length}/${state.maxPick}`;
-      
-      // 翻牌动画
-      const inner = document.createElement("div");
-      inner.className = "dc-inner";
-      const back = document.createElement("div");
-      back.className = "dc-face dc-back";
-      back.innerHTML = "✦";
-      const front = document.createElement("div");
-      front.className = "dc-face dc-front";
-      front.innerHTML = TAROT_DECK[idx].name;
-      inner.appendChild(back);
-      inner.appendChild(front);
-      el.innerHTML = "";
-      el.appendChild(inner);
-      
-      setTimeout(() => {
-        el.classList.add("flipped");
-      }, 10);
-    }
-
-    function closeDealer() {
-      document.getElementById("deal-wrap").style.display = "none";
-    }
-
-    function confirmSelection() {
-      if (state.currentDealerType !== "tarot") return;
-      if (state.pickedCards.length !== state.maxPick) {
-        alert(`请先选择 ${state.maxPick} 张牌。`);
-        return;
-      }
-
-      const positions = ["过去", "现在", "未来"];
-      const selected = state.pickedCards.map((idx, i) => {
-        const base = TAROT_DECK[idx];
-        const reversed = Math.random() < 0.35;
-        return {
-          ...base,
-          reversed,
-          position: positions[i],
-          meaning: reversed ? base.reversed : base.upright
+        // ================= 状态管理 =================
+        const State = {
+            user: null,
+            users: {},
+            currentSpread: null,
+            pickedCards: [],
+            dealType: 'tarot',
+            yaoLines: [],
+            chatHistory: []
         };
-      });
 
-      state.pickedCardData = selected;
-      renderTarotResult(selected);
-      saveHistory({
-        type: "tarot",
-        question: document.getElementById("tarot-question").value.trim(),
-        result: selected,
-        time: new Date().toLocaleString("zh-CN")
-      });
+        // ================= 工具函数 =================
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
 
-      closeDealer();
-      switchTab("tarot");
-      vibrate([100, 50, 100]);
-    }
-
-    function renderTarotResult(cards) {
-      const question = document.getElementById("tarot-question").value.trim();
-      const box = document.getElementById("tarot-result");
-      let html = `<h3>本次塔罗解读</h3>`;
-      if (question) html += `<p style="margin-bottom:16px;"><strong>问题：</strong>${escapeHtml(question)}</p>`;
-      
-      html += `<div class="tarot-spread">`;
-      cards.forEach((card, i) => {
-        html += `
-          <div class="card-result-item tarot-card" style="animation-delay:${i*0.2}s">
-            <div class="card-result-title">
-              ${card.position} 
-              ${card.reversed ? '<span class="reversed-tag">逆位</span>' : ''}
-            </div>
-            <div style="font-weight:bold; color:var(--gold); margin-bottom:8px;">${card.name}</div>
-            <div class="card-result-meaning">${card.meaning}</div>
-          </div>
-        `;
-      });
-      html += `</div>`;
-      
-      // 综合解读
-      const summary = generateTarotSummary(cards, question);
-      html += `<div class="card-result-item" style="margin-top:16px;">
-        <div class="card-result-title">综合指引</div>
-        <div class="card-result-meaning">${summary}</div>
-      </div>`;
-      
-      box.innerHTML = html;
-    }
-
-    function generateTarotSummary(cards, question) {
-      const reverseCount = cards.filter(c => c.reversed).length;
-      let mood = "整体能量较为顺畅，事情有推进空间。";
-      if (reverseCount === 1) mood = "局势存在一处明显阻滞，需要修正认知或节奏。";
-      if (reverseCount >= 2) mood = "当前阻力较多，建议放慢判断，先处理内在与现实失衡。";
-      
-      let q = question ? `围绕“${escapeHtml(question)}”来看，` : "整体来看，";
-      return `${q}${mood} 从三张牌的信息看，${cards[0].name}代表过去的基础，${cards[1].name}反映现在的状态，${cards[2].name}预示未来的走向。建议先理解过去形成的模式，再根据现在的真实处境调整行动。`;
-    }
-
-    function clearTarotResult() {
-      document.getElementById("tarot-question").value = "";
-      document.getElementById("tarot-result").innerHTML = `<div class="empty">尚未完成抽牌。</div>`;
-      state.pickedCards = [];
-      state.pickedCardData = [];
-    }
-
-    // ========== 六爻逻辑 ==========
-    function tossCoins() {
-      if (state.currentYao.length >= 6) return;
-      if (navigator.vibrate) navigator.vibrate(30);
-
-      const coins = [Math.round(Math.random()), Math.round(Math.random()), Math.round(Math.random())];
-      const sum = coins.reduce((a, b) => a + b, 0);
-
-      let type = "";
-      if (sum === 3) type = "old-yang";
-      else if (sum === 0) type = "old-yin";
-      else if (sum === 2) type = "yin";
-      else type = "yang";
-
-      state.currentYao.push(type);
-      renderYao(type);
-
-      if (state.currentYao.length === 6) {
-        renderLiuyaoResult();
-      }
-    }
-
-    function renderYao(type) {
-      const container = document.getElementById("yao-container");
-      const yao = document.createElement("div");
-      yao.className = `yao ${type.includes("yang") ? "yang" : "yin"}`;
-      yao.style.width = "100%";
-      yao.style.height = "12px";
-      yao.style.marginBottom = "8px";
-      yao.style.borderRadius = "6px";
-      
-      if (type.includes("yang")) {
-        yao.style.background = "var(--ink)";
-      } else {
-        yao.style.background = `linear-gradient(to right, var(--ink) 0 45%, transparent 45% 55%, var(--ink) 55% 100%)`;
-      }
-
-      if (type.startsWith("old")) {
-        const mark = document.createElement("span");
-        mark.className = "cf-rev-mark";
-        mark.innerText = type === "old-yang" ? " ○" : " ×";
-        mark.style.marginLeft = "10px";
-        mark.style.color = "var(--rose)";
-        yao.appendChild(mark);
-      }
-      container.appendChild(yao);
-    }
-
-    function resetLiuyao() {
-      state.currentYao = [];
-      document.getElementById("yao-container").innerHTML = "";
-      document.getElementById("liuyao-result").innerHTML = `<div class="empty">尚未成卦。</div>`;
-    }
-
-    function yaoToBit(type) {
-      return (type === "yang" || type === "old-yang") ? "1" : "0";
-    }
-
-    function changedYaoBit(type) {
-      if (type === "old-yang") return "0";
-      if (type === "old-yin") return "1";
-      return yaoToBit(type);
-    }
-
-    function renderLiuyaoResult() {
-      const originalBits = state.currentYao.map(yaoToBit).join("");
-      const changedBits = state.currentYao.map(changedYaoBit).join("");
-      const movingLines = state.currentYao
-        .map((t, i) => t.startsWith("old") ? i + 1 : null)
-        .filter(Boolean);
-
-      // 查找卦象
-      let originalName = "未知卦";
-      let changedName = "未知卦";
-      
-      for (const [name, data] of Object.entries(GUA_DATA)) {
-        if (data.binary === originalBits) originalName = name;
-        if (data.binary === changedBits) changedName = name;
-      }
-
-      const detail = GUA_DATA[originalName];
-      const changedDetail = GUA_DATA[changedName];
-      const question = document.getElementById("liuyao-question").value.trim();
-      const movingText = movingLines.length ? `动爻：第 ${movingLines.join("、")} 爻` : "无动爻（静卦）";
-
-      let html = `<h3>起卦结果</h3>`;
-      if (question) html += `<p style="margin-bottom:12px;"><strong>问题：</strong>${escapeHtml(question)}</p>`;
-      
-      html += `
-        <div style="margin-bottom:16px;">
-          <div><strong>本卦：</strong>${originalName} (${originalBits})</div>
-          <div class="subtle">${detail.judgment}</div>
-        </div>
-      `;
-
-      if (movingLines.length > 0) {
-        html += `
-          <div style="margin-bottom:16px;">
-            <div><strong>变卦：</strong>${changedName} (${changedBits})</div>
-            <div class="subtle">${changedDetail.judgment}</div>
-          </div>
-        `;
-      }
-
-      html += `<div style="margin-bottom:16px;"><strong>${movingText}</strong></div>`;
-      
-      // 显示动爻辞
-      if (movingLines.length > 0) {
-        html += `<div style="margin-bottom:16px;"><strong>动爻辞：</strong><br>`;
-        movingLines.forEach(lineNum => {
-          html += `${lineNum}爻：${detail.lines[lineNum-1]}<br>`;
-        });
-        html += `</div>`;
-      }
-
-      // 综合判断
-      const summary = generateLiuyaoSummary(originalName, changedName, movingLines);
-      html += `<div style="margin-top:16px; padding:12px; background:rgba(212,175,55,0.1); border-radius:12px;">
-        <strong>综合判断：</strong> ${summary}
-      </div>`;
-
-      document.getElementById("liuyao-result").innerHTML = html;
-      
-      saveHistory({
-        type: "liuyao",
-        question,
-        result: { originalName, changedName, originalBits, changedBits, movingLines },
-        time: new Date().toLocaleString("zh-CN")
-      });
-      
-      vibrate([50, 100, 50]);
-    }
-
-    function generateLiuyaoSummary(original, changed, moving) {
-      if (moving.length === 0) {
-        return `得${original}卦，为静卦，象征事物发展相对稳定，目前状态与最终结果一致。建议顺应当前趋势，保持现状或按部就班推进。`;
-      }
-      return `由${original}卦变${changed}卦，说明事情正在发展变化中。动爻提示关键变化点，需重点关注。${moving.length === 1 ? "单爻动，变化明确。" : "多爻动，变化剧烈。"}建议结合本卦与变卦的卦辞，灵活应对。`;
-    }
-
-    // ========== 历史记录 ==========
-    function saveHistory(item) {
-      const list = JSON.parse(localStorage.getItem("spirit_altar_history") || "[]");
-      list.unshift(item);
-      localStorage.setItem("spirit_altar_history", JSON.stringify(list.slice(0, 50)));
-      renderHistory();
-    }
-
-    function renderHistory() {
-      const list = JSON.parse(localStorage.getItem("spirit_altar_history") || "[]");
-      const wrap = document.getElementById("history-list");
-      if (!wrap) return;
-
-      if (!list.length) {
-        wrap.innerHTML = `<div class="glass-card empty">暂无记录。</div>`;
-        return;
-      }
-
-      wrap.innerHTML = list.map(item => {
-        if (item.type === "tarot") {
-          return `
-            <div class="history-item">
-              <div class="history-time">${item.time}</div>
-              <div class="history-content">
-                <strong>塔罗占卜</strong><br>
-                ${item.question ? `<div class="subtle">问题：${escapeHtml(item.question)}</div>` : ""}
-                <div>${item.result.map(x => `${x.position}·${x.name}${x.reversed ? "逆位" : "正位"}`).join(" / ")}</div>
-              </div>
-            </div>
-          `;
-        } else {
-          return `
-            <div class="history-item">
-              <div class="history-time">${item.time}</div>
-              <div class="history-content">
-                <strong>六爻起卦</strong><br>
-                ${item.question ? `<div class="subtle">问题：${escapeHtml(item.question)}</div>` : ""}
-                <div>本卦：${item.result.originalName}</div>
-                <div>变卦：${item.result.changedName}</div>
-                <div>动爻：${item.result.movingLines.length ? item.result.movingLines.join("、") : "无"}</div>
-              </div>
-            </div>
-          `;
+        function saveState() {
+            localStorage.setItem('spirit_altar_data', JSON.stringify({users: State.users, currentUser: State.user}));
         }
-      }).join("");
-    }
 
-    function clearHistory() {
-      if (!confirm("确定清空所有记录吗？")) return;
-      localStorage.removeItem("spirit_altar_history");
-      renderHistory();
-      vibrate(200);
-    }
+        function loadState() {
+            const data = JSON.parse(localStorage.getItem('spirit_altar_data'));
+            if(data && data.users) {
+                State.users = data.users;
+                State.user = data.currentUser;
+            }
+        }
 
-    // 音乐
-    let audioCtx;
-    function toggleMusic() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioCtx.createOscillator();
-        oscillator.connect(audioCtx.destination);
-        oscillator.start();
-        this.innerText = "🔇";
-      } else {
-        audioCtx.close();
-        audioCtx = null;
-        this.innerText = "🎵";
-      }
-      vibrate(50);
-    }
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+        }
 
-    // 工具函数
-    function escapeHtml(str) {
-      return String(str).replace(/[&<>"']/g, s => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      }[s]));
-    }
+        function vibrate(t=10) { if(navigator.vibrate) navigator.vibrate(t); }
 
-    function vibrate(pattern) {
-      if (navigator.vibrate) navigator.vibrate(pattern);
-    }
+        // ================= 视图控制 =================
+        function switchView(viewId) {
+            $$('.view').forEach(v => v.classList.remove('active'));
+            $('#view-'+viewId).classList.add('active');
+            $$('.nav-item').forEach((n,i) => n.classList.toggle('active', ['home','tarot','liuyao','history','settings'][i] === viewId));
+        }
 
-    // 启动
-    init();
-  </script>
+        // ================= 用户系统 =================
+        function login() {
+            const name = $('#input-name').value.trim() || '访客';
+            const pass = $('#input-pass').value; // 简单演示，不加密
+            if(!State.users[name]) {
+                State.users[name] = {pass: pass, history: [], stats: {count:0}};
+            } else if(State.users[name].pass !== pass) {
+                alert('密码错误');
+                return;
+            }
+            State.user = name;
+            saveState();
+            refreshHome();
+            switchView('home');
+        }
+
+        function logout() {
+            State.user = null;
+            saveState();
+            switchView('login');
+        }
+
+        function refreshHome() {
+            if(!State.user) return;
+            const hours = new Date().getHours();
+            let greet = '深夜好';
+            if(hours < 12) greet = '早上好';
+            else if(hours < 18) greet = '下午好';
+            else if(hours < 23) greet = '晚上好';
+            $('#home-greeting').innerText = `${greet}，${State.user}`;
+            $('#home-date').innerText = new Date().toLocaleDateString('zh-CN', {weekday:'long', month:'long', day:'numeric'});
+            $('#stat-count').innerText = State.users[State.user].stats.count;
+        }
+
+        // ================= 塔罗抽牌 =================
+        function openDealer(type, spread) {
+            State.dealType = type;
+            State.currentSpread = spread;
+            State.pickedCards = [];
+            const countMap = {single:1, three:3, yesno:2, celtic:10, love:7, career:6, daily:3, weekly:5, monthly:7};
+            State.maxPick = countMap[spread] || 3;
+            $('#deal-title').innerText = `请静心思考，抽取 ${State.maxPick} 张牌`;
+            $('#deal-count').innerText = `已选择: 0/${State.maxPick}`;
+            $('#deal-area').innerHTML = '';
+            $('#deal-overlay').style.display = 'flex';
+
+            const total = TAROT_DECK.length;
+            const radius = 220;
+            const start = -50, end = 50;
+            const step = (end - start) / (total - 1);
+
+            for(let i=0; i<total; i++) {
+                const angle = start + i * step;
+                const card = document.createElement('div');
+                card.className = 'deal-card';
+                card.style.setProperty('--angle', `${angle}deg`);
+                card.style.transform = `translateX(-50%) rotate(${angle}deg) translateY(-${radius}px)`;
+                card.dataset.index = i;
+                card.onclick = () => pickCard(card, i, angle);
+                $('#deal-area').appendChild(card);
+            }
+        }
+
+        function pickCard(el, idx, angle) {
+            if(el.classList.contains('selected')) return;
+            if(State.pickedCards.length >= State.maxPick) return;
+            vibrate(5);
+            el.classList.add('selected');
+            State.pickedCards.push(idx);
+            $('#deal-count').innerText = `已选择: ${State.pickedCards.length}/${State.maxPick}`;
+            // 微动画
+            el.style.transform = `translateX(-50%) rotate(${angle}deg) translateY(-260px) scale(1.1)`;
+        }
+
+        function closeDealer() {
+            $('#deal-overlay').style.display = 'none';
+        }
+
+        function confirmDeal() {
+            if(State.pickedCards.length < State.maxPick) {
+                alert(`请选择 ${State.maxPick} 张牌`);
+                return;
+            }
+            vibrate([50,50,50]);
+            renderResult();
+            saveHistory();
+            closeDealer();
+            switchView('home'); // 回到首页看结果或单独结果页，这里简单回首页
+        }
+
+        function renderResult() {
+            // 简化版：直接在控制台或alert显示，实际项目需渲染到页面
+            let msg = "解读结果：\n";
+            const positions = ["过去","现在","未来","核心","阻碍","建议"];
+            State.pickedCards.forEach((idx, i) => {
+                const card = TAROT_DECK[idx];
+                const reversed = Math.random() < 0.3;
+                msg += `${positions[i]||`第${i+1}张`}: ${card.name} ${reversed?'逆位':'正位'} - ${card.meaning}\n`;
+            });
+            alert(msg);
+        }
+
+        // ================= 六爻逻辑 =================
+        function startLiuyao() {
+            State.yaoLines = [];
+            $('#yao-display').innerHTML = '';
+            $('#liuyao-result').innerText = '正在起卦中...';
+            tossCoin();
+        }
+
+        function tossCoin() {
+            if(State.yaoLines.length >= 6) return renderLiuyaoResult();
+            // 3枚铜钱
+            const coins = [Math.round(Math.random()), Math.round(Math.random()), Math.round(Math.random())];
+            const sum = coins.reduce((a,b)=>a+b,0);
+            let type;
+            if(sum === 3) type = {cls:'yang', mark:'○'}; // 老阳
+            else if(sum === 0) type = {cls:'yin', mark:'×'}; // 老阴
+            else if(sum === 2) type = {cls:'yin', mark:''}; // 少阴
+            else type = {cls:'yang', mark:''}; // 少阳
+            
+            State.yaoLines.push(type);
+            renderYaoLine(type);
+            
+            setTimeout(tossCoin, 300); // 模拟掷钱间隔
+        }
+
+        function renderYaoLine(type) {
+            const div = document.createElement('div');
+            div.className = `yao ${type.cls}`;
+            if(type.mark) {
+                const span = document.createElement('span');
+                span.className = 'yao-mark';
+                span.innerText = type.mark;
+                div.appendChild(span);
+            }
+            $('#yao-display').appendChild(div);
+        }
+
+        function renderLiuyaoResult() {
+            const bits = State.yaoLines.map(l => l.cls === 'yang' ? '1' : '0').join('');
+            const gua = GUA_MAP[bits] || {name:'未知卦', judgment:'无'};
+            const question = $('#liuyao-question').value;
+            $('#liuyao-result').innerHTML = `
+                <strong>${gua.name}</strong> (${bits})<br>
+                <em>${gua.judgment}</em>
+                ${question ? `<br><br>针对“${question}”：${gua.judgment}` : ''}
+            `;
+        }
+
+        // ================= 答案之书 =================
+        function openBook() {
+            const idx = Math.floor(Math.random() * BOOK_CONTENT.length);
+            const content = BOOK_CONTENT[idx];
+            $('#book-page').innerText = idx + 1;
+            $('#book-title').innerText = content.title;
+            $('#book-text').innerText = content.text;
+            $('#book-modal').classList.add('show');
+        }
+
+        function closeBook() {
+            $('#book-modal').classList.remove('show');
+        }
+
+        // ================= 历史记录 =================
+        function saveHistory() {
+            if(!State.user) return;
+            const user = State.users[State.user];
+            const record = {
+                time: new Date().toLocaleString(),
+                type: State.currentSpread,
+                cards: State.pickedCards.map(i => TAROT_DECK[i].name)
+            };
+            user.history.unshift(record);
+            user.stats.count++;
+            saveState();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if(!State.user) return;
+            const list = State.users[State.user].history;
+            const el = $('#history-list');
+            if(list.length === 0) {
+                el.innerHTML = '<div class="card-box"><p class="subtle" style="text-align:center;">暂无记录</p></div>';
+                return;
+            }
+            el.innerHTML = list.slice(0, 20).map(r => `
+                <div class="card-box">
+                    <div class="subtle">${r.time}</div>
+                    <strong>${r.type}</strong><br>
+                    <div style="margin-top:5px;">${r.cards.join(' | ')}</div>
+                </div>
+            `).join('');
+        }
+
+        // ================= 设置 =================
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            $('#theme-status').innerText = document.body.classList.contains('dark-mode') ? '深色' : '浅色';
+        }
+
+        function clearAllData() {
+            if(confirm('确定要清空所有数据吗？')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // ================= 初始化 =================
+        loadState();
+        if(State.user) {
+            refreshHome();
+            switchView('home');
+        } else {
+            switchView('login');
+        }
+    </script>
 </body>
 </html>
