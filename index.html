@@ -835,8 +835,7 @@ function openDealer(title,count){
     var a=startA+i*step,el=document.createElement('div');
     el.className='dc';el.style.transform='translateX(-50%) rotate('+a+'deg) translateY(-'+rad+'px)';
     el.dataset.i=i;el.innerHTML='<span style="opacity:.4">✦</span>';
-    (function(idx,ang){el.addEventListener('click',function(){pickDC(el,idx,ang,rad,count)})})(i,a);
-    body.appendChild(el);
+(function(cardEl,idx,ang){cardEl.addEventListener('click',function(){pickDC(cardEl,idx,ang,rad,count)})})(el,i,a);    body.appendChild(el);
   }
   $('dealer').classList.add('on');
 }
