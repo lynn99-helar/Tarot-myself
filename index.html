@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<title>灵性祭坛 · 极简版</title>
+<title>醒·省</title>
 
 <style>
 /* =========================
@@ -1336,8 +1336,7 @@ function renderFortuneResult(cards,spDef){
   });
   html += `</div>`;
   html += `<div class="gc"><h3>运势总结</h3><p>${summary}</p></div>`;
-  html += `<div class="gc tc"><button class="btn primary" onclick="saveToHist('fortune')">保存记录</button></div>`;
-
+html+='<div class="gc tc"><button class="btn bg" onclick="saveToHist(\'fortune\')">保存记录</button> <button class="btn bgo" onclick="openAIWith(\'fortune\')">AI 解读</button></div>';
   $('fortune-result').innerHTML=html;
   S._lastResult={type:'fortune',spread:spDef.name,question:'',cards};
 }
