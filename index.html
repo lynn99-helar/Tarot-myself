@@ -4,31 +4,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>灵性祭坛 · 专业版</title>
+<title>醒·省</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --gold:#C8A96E;--rose:#C4786A;--blue:#5B7FA6;--green:#7BA87B;
-  --bg:#111009;--paper:#1A1712;--card-bg:#222018;
-  --ink:#EDE9E1;--muted:#8A8478;--line:rgba(200,169,110,0.12);
-  --shadow:0 8px 32px rgba(0,0,0,0.5);
-  --r:16px;--rl:20px
+  :root{
+    --gold:#9B8E82;--rose:#8A7E78;--blue:#7A8890;--green:#7A8A7A;
+    --bg:#000000;--paper:#161616;--card-bg:#1C1C1E;
+    --ink:#F0EDE8;--muted:#86868B;--line:rgba(255,255,255,0.06);
+    --shadow:none;
+    --r:12px;--rl:14px
 }
 body.light{
-  --bg:#F4F1EB;--paper:#FDFAF4;--card-bg:#F0EBE0;
-  --ink:#1A1814;--muted:#7A7468;--line:rgba(26,24,20,0.1);
-  --shadow:0 8px 32px rgba(0,0,0,0.08)
+    --bg:#F7F6F3;--paper:#FFFFFF;--card-bg:#FFFFFF;
+    --ink:#1D1D1F;--muted:#86868B;--line:rgba(0,0,0,0.06);
+    --shadow:none
 }
 html,body{height:100%;overflow:hidden}
 body{font-family:'PingFang SC','Quicksand','Noto Sans SC',system-ui,sans-serif;
   background:var(--bg);color:var(--ink);transition:background .4s,color .4s}
-#nav{display:none;height:auto;min-height:56px;background:var(--paper);border-top:1px solid var(--line);
-align-items:center;justify-content:space-around;flex-shrink:0;z-index:50;
-border-radius:20px 20px 0 0;
-padding:6px 0 calc(6px + env(safe-area-inset-bottom, 0px))}
+#nav{display:none;min-height:50px;
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  background:var(--paper);border-top:1px solid var(--line);
+  align-items:center;justify-content:space-around;z-index:50;
+  border-radius:0;
+  padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
   /* NAV */
-#nav{display:none;height:64px;background:var(--paper);border-top:1px solid var(--line);
+#nav{display:none;height:64px;background:rgba(22,22,22,.85);border-top:1px solid var(--line);
   align-items:center;justify-content:space-around;flex-shrink:0;z-index:50;
   border-radius:20px 20px 0 0}
 #nav.show{display:flex}
@@ -37,7 +41,7 @@ padding:6px 0 calc(6px + env(safe-area-inset-bottom, 0px))}
 .nav-i .ni{font-size:1.1rem;display:block;margin-bottom:1px}
 .nav-i.on{color:var(--gold);font-weight:700}
 /* SCREENS */
-.scr{display:none;flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:10px;-webkit-overflow-scrolling:touch}
+.scr{display:none;flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:76px;-webkit-overflow-scrolling:touch}
 .scr.on{display:flex;flex-direction:column;animation:scrIn .35s ease}
 @keyframes scrIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 /* LOGIN */
@@ -296,20 +300,6 @@ animation:cdPop .7s cubic-bezier(.23,1,.32,1) both}
     </div>
   </div>
   <div id="fortune-result"></div>
-</div>
-
-<!-- ====== LENORMAND ====== -->
-<div id="lenormand-scr" class="scr">
-  <div class="sh"><div><h1>🎴 雷诺曼占卜</h1><div class="sub">经典 三牌叙事阵</div></div>
-    <button class="back" onclick="goTab('home')">← 返回</button></div>
-  <div class="gc">
-    <label>占卜问题（可选）</label>
-    <textarea id="l-question" placeholder="例：这段关系的本质是什么？"></textarea>
-    <div class="row">
-      <button class="btn bg" onclick="startLenormand()">开始抽牌</button>
-    </div>
-  </div>
-  <div id="lenormand-result"></div>
 </div>
 
 <!-- ====== LIUYAO ====== -->
@@ -834,7 +824,7 @@ function updateHome(){
   $('daily-msg').textContent='✨ '+msgs[Math.floor(Math.random()*msgs.length)];
   var total=S.history.length;
   $('stat-total').textContent=total;
-  $('stat-tarot').textContent=S.history.filter(function(h){return h.type==='tarot'||h.type==='fortune'||h.type==='season'||h.type==='lenormand'}).length;
+$('stat-tarot').textContent=S.history.filter(function(h){return h.type==='tarot'||h.type==='fortune'||h.type==='season'}).length;
   $('stat-yao').textContent=S.history.filter(function(h){return h.type==='liuyao'||h.type==='book'}).length;
 }
 
@@ -883,7 +873,6 @@ function confirmDealer(){
   closeDealer();
   if(S.dealerType==='tarot')renderTarotResult(cards,spDef);
   else if(S.dealerType==='fortune')renderFortuneResult(cards,spDef);
-  else if(S.dealerType==='lenormand')renderLenormandResult(cards);
 }
 
 // ========== TAROT ==========
@@ -1021,35 +1010,37 @@ function renderLiuyao(){
 var _bookTimer=null;
 function openBook(){
   if(_bookTimer){clearInterval(_bookTimer);_bookTimer=null}
-  $('book-card').style.display='none';
-  $('book-cd').style.display='flex';
-  $('cd-num').textContent='3';
-  $('book-overlay').classList.add('on');
+  var overlay=$('book-overlay');
+  var cdEl=$('book-cd');
+  var card=$('book-card');
+  card.style.display='none';
+  card.classList.remove('flip-open','mini-flip');
+  cdEl.style.display='flex';
+  overlay.classList.add('on');
   var count=3;
-  // 重新触发动画
   var numEl=$('cd-num');
-  numEl.style.animation='none';numEl.offsetHeight;numEl.style.animation='';
+  numEl.textContent='3';
+  numEl.style.animation='none';void numEl.offsetHeight;numEl.style.animation='';
   _bookTimer=setInterval(function(){
     count--;
     if(count>0){
-      numEl.textContent=count;
-      numEl.style.animation='none';numEl.offsetHeight;
+      numEl.textContent=String(count);
+      numEl.style.animation='none';void numEl.offsetHeight;
       numEl.style.animation='cdPop .7s cubic-bezier(.23,1,.32,1) both';
     }else{
       clearInterval(_bookTimer);_bookTimer=null;
-      $('book-cd').style.display='none';
+      cdEl.style.display='none';
       var p=BOOK[Math.floor(Math.random()*BOOK.length)];
       showBookPage(p);
-      var card=$('book-card');
-      card.style.display='';
-      card.classList.remove('flip-open');card.offsetHeight;
+      card.style.cssText='display:block';
+      void card.offsetHeight;
       card.classList.add('flip-open');
     }
   },800);
 }
 function flipBook(){
   var card=$('book-card');
-  card.classList.remove('mini-flip');card.offsetHeight;
+  card.classList.remove('mini-flip');void card.offsetHeight;
   var p=BOOK[Math.floor(Math.random()*BOOK.length)];
   showBookPage(p);
   card.classList.add('mini-flip');
@@ -1057,7 +1048,9 @@ function flipBook(){
 function closeBook(){
   if(_bookTimer){clearInterval(_bookTimer);_bookTimer=null}
   $('book-overlay').classList.remove('on');
-  $('book-card').classList.remove('flip-open','mini-flip');
+  var card=$('book-card');
+  card.style.display='none';
+  card.classList.remove('flip-open','mini-flip');
 }
 
 // ========== HISTORY ==========
