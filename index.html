@@ -449,7 +449,7 @@ body.dark ::-webkit-scrollbar-thumb{background:rgba(242,239,232,.14)}
 
   <!-- LOGIN -->
   <div id="login-scr" class="scr on" style="align-items:center;justify-content:center;padding:40px 20px;text-align:center">
-    <h1 style="font-size:1.8rem;font-weight:650;letter-spacing:.4px">灵性祭坛</h1>
+    <h1 style="font-size:1.8rem;font-weight:650;letter-spacing:.4px">醒·省</h1>
     <p class="desc" style="color:var(--muted);font-size:.86rem;margin:8px 0 26px">塔罗 · 六爻 · 答案之书</p>
     <input id="login-name" placeholder="请输入昵称" maxlength="20" style="max-width:300px;margin-bottom:12px" />
     <input id="login-pw" placeholder="密码（可选）" type="password" maxlength="20" style="max-width:300px;margin-bottom:12px" />
@@ -1554,7 +1554,7 @@ function shareHist(i){
   if(item.question) text+='问题：'+item.question+'\n';
   if(item.cards) text+=item.cards.map(c=>c.pos+'·'+c.name+(c.rev?'(逆)':'')).join(' / ')+'\n';
   if(item.summary) text+=item.summary+'\n';
-  text+='—— 灵性祭坛';
+  text+='—— 醒·省';
   if(navigator.clipboard) navigator.clipboard.writeText(text).then(()=>alert('已复制'));
   else prompt('复制以下内容：',text);
 }
@@ -1574,7 +1574,7 @@ const AI_MODEL='Qwen/Qwen2.5-7B-Instruct';
 function openAI(){
   S.aiMessages=[];
   $('ai-msgs').innerHTML='';
-  addAIMsg('bot','你好，我是灵性祭坛的 AI 解读助手。你可以问我关于塔罗、六爻的问题。');
+  addAIMsg('bot','你好，我是醒·省的 AI 解读助手。你可以问我关于塔罗、六爻的问题。');
   $('ai-box').classList.add('on');
 }
 function openAIWith(type){
@@ -1630,7 +1630,7 @@ async function sendAI(){
       body:JSON.stringify({
         model:AI_MODEL,
         messages:[
-          {role:'system',content:'你是灵性祭坛的 AI 解读助手，精通塔罗牌与六爻。解读务实，少意象，多具体建议。用中文，简洁但有深度。'}
+          {role:'system',content:'你是醒·省的 AI 解读助手，精通塔罗牌与六爻。解读务实，少意象，多具体建议。用中文，简洁但有深度。'}
         ].concat(S.aiMessages),
         max_tokens:1024,
         temperature:0.7
